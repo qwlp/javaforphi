@@ -33,6 +33,86 @@ func TestEclipseHeartbeat(t *testing.T) {
 	}
 }
 
+func TestEclipseBundlesOutsideInstallation(t *testing.T) {
+	root := t.TempDir()
+	pool := filepath.Join(t.TempDir(), "shared pool")
+	if err := os.MkdirAll(pool, 0700); err != nil {
+		t.Fatal(err)
+	}
+	want := filepath.Join(pool, "org.eclipse.core.runtime_1.jar")
+	if err := os.WriteFile(want, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	index := filepath.Join(root, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info")
+	if err := os.MkdirAll(filepath.Dir(index), 0700); err != nil {
+		t.Fatal(err)
+	}
+	relative, err := filepath.Rel(root, want)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, location := range []string{fileURL(want), filepath.ToSlash(relative), strings.ReplaceAll(filepath.ToSlash(relative), " ", "%20"), "reference:" + fileURL(want)} {
+		if err := os.WriteFile(index, []byte("org.eclipse.core.runtime,1,"+location+",4,false\n"), 0600); err != nil {
+			t.Fatal(err)
+		}
+		got, err := eclipseJar(root, "org.eclipse.core.runtime")
+		if err != nil || got != want {
+			t.Fatalf("bundle %q resolved to %q: %v", location, got, err)
+		}
+	}
+}
+
+func TestEclipseSharedPoolInstallation(t *testing.T) {
+	executable := os.Getenv("PHI_TEST_ECLIPSE")
+	if executable == "" {
+		t.Skip("set PHI_TEST_ECLIPSE for a real shared-pool installation test")
+	}
+	executable, original, err := locateEclipse(Settings{EditorPath: executable})
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := t.TempDir()
+	t.Setenv("PHI_CONFIG", filepath.Join(t.TempDir(), "settings.json"))
+	index := filepath.Join(root, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info")
+	if err := os.MkdirAll(filepath.Dir(index), 0700); err != nil {
+		t.Fatal(err)
+	}
+	ini, err := os.ReadFile(filepath.Join(original, "configuration", "config.ini"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "configuration", "config.ini"), ini, 0600); err != nil {
+		t.Fatal(err)
+	}
+	bundles, err := os.ReadFile(filepath.Join(original, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var entries []string
+	for _, line := range strings.Split(string(bundles), "\n") {
+		fields := strings.Split(line, ",")
+		if len(fields) == 5 {
+			bundle, err := eclipseBundlePath(original, fields[2])
+			if err != nil {
+				t.Fatal(err)
+			}
+			fields[2] = fileURL(bundle)
+			line = strings.Join(fields, ",")
+		}
+		entries = append(entries, line)
+	}
+	if err := os.WriteFile(index, []byte(strings.Join(entries, "\n")), 0600); err != nil {
+		t.Fatal(err)
+	}
+	configuration, err := buildEclipseConfiguration(root, filepath.Join(t.TempDir(), "workspace"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := verifyEclipseConfiguration(executable, configuration); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestEclipseImportsInPlace(t *testing.T) {
 	executable := os.Getenv("PHI_TEST_ECLIPSE")
 	if executable == "" {

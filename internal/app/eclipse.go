@@ -127,6 +127,9 @@ func locateEclipse(settings Settings) (string, string, error) {
 		}
 		for _, root := range []string{filepath.Dir(resolved), filepath.Join(filepath.Dir(resolved), "..", "Eclipse")} {
 			root = filepath.Clean(root)
+			if info, err := os.Stat(filepath.Join(root, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info")); err == nil && info.Mode().IsRegular() {
+				return resolved, root, nil
+			}
 			if info, err := os.Stat(filepath.Join(root, "plugins")); err == nil && info.IsDir() {
 				return resolved, root, nil
 			}
@@ -179,6 +182,7 @@ func buildEclipseConfiguration(root, workspace string) (string, error) {
 		return "", fmt.Errorf("read Eclipse bundles: %w", err)
 	}
 	hash := sha256.New()
+	hash.Write([]byte("phi-eclipse-config-v2"))
 	hash.Write(ini)
 	hash.Write(bundles)
 	hash.Write([]byte(root))
@@ -218,11 +222,11 @@ func buildEclipseConfiguration(root, workspace string) (string, error) {
 		if len(fields) != 5 {
 			return "", fmt.Errorf("unsupported Eclipse bundle record: %s", line)
 		}
-		location := fields[2]
-		if !strings.Contains(location, ":") {
-			location = fileURL(filepath.Join(root, filepath.FromSlash(location)))
+		location, err := eclipseBundlePath(root, fields[2])
+		if err != nil {
+			return "", err
 		}
-		fields[2] = location
+		fields[2] = fileURL(location)
 		bundleList.WriteString(strings.Join(fields, ",") + "\n")
 	}
 	bundleList.WriteString("phi.eclipse,1.0.0," + fileURL(filepath.Join(configuration, "phi.eclipse.jar")) + ",4,false\n")
@@ -253,11 +257,62 @@ func buildEclipseConfiguration(root, workspace string) (string, error) {
 }
 
 func eclipseJar(root, name string) (string, error) {
+	// Eclipse Installer often stores bundles in a shared .p2 pool. The index
+	// identifies the exact installed versions and their actual locations.
+	data, err := os.ReadFile(filepath.Join(root, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info"))
+	if err == nil {
+		for _, line := range strings.Split(string(data), "\n") {
+			fields := strings.Split(strings.TrimSpace(line), ",")
+			if len(fields) != 5 || fields[0] != name {
+				continue
+			}
+			bundle, err := eclipseBundlePath(root, fields[2])
+			if err != nil {
+				return "", err
+			}
+			if _, err := os.Stat(bundle); err != nil {
+				return "", fmt.Errorf("Eclipse bundle %s is unavailable at %s: %w", name, bundle, err)
+			}
+			return bundle, nil
+		}
+	}
 	jars, err := filepath.Glob(filepath.Join(root, "plugins", name+"_*.jar"))
 	if err != nil || len(jars) == 0 {
 		return "", fmt.Errorf("Eclipse is missing %s", name)
 	}
 	return jars[len(jars)-1], nil
+}
+
+func eclipseBundlePath(root, location string) (string, error) {
+	location = strings.TrimPrefix(location, "reference:")
+	if filepath.IsAbs(location) {
+		return filepath.Clean(location), nil
+	}
+	parsed, err := url.Parse(location)
+	if err != nil {
+		return "", fmt.Errorf("invalid Eclipse bundle location %q: %w", location, err)
+	}
+	if parsed.Scheme != "" && parsed.Scheme != "file" {
+		return "", fmt.Errorf("unsupported Eclipse bundle location: %s", location)
+	}
+	value := parsed.Path
+	if parsed.Opaque != "" {
+		value, err = url.PathUnescape(parsed.Opaque)
+		if err != nil {
+			return "", err
+		}
+	}
+	if parsed.Host != "" && parsed.Host != "localhost" {
+		value = "//" + parsed.Host + "/" + strings.TrimPrefix(value, "/")
+	}
+	if runtime.GOOS == "windows" && strings.HasPrefix(value, "/") && filepath.VolumeName(filepath.FromSlash(value[1:])) != "" {
+		value = value[1:]
+	}
+	value = filepath.FromSlash(value)
+	if filepath.IsAbs(value) {
+		return filepath.Clean(value), nil
+	}
+	return filepath.Join(root, value), nil
 }
 
 func compileEclipseHelper(root, stage string) error {
@@ -274,6 +329,22 @@ func compileEclipseHelper(root, stage string) error {
 		compilerName += ".exe"
 	}
 	compilers, _ := filepath.Glob(filepath.Join(root, "plugins", "org.eclipse.justj.*", "jre", "bin", compilerName))
+	if data, readErr := os.ReadFile(filepath.Join(root, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info")); readErr == nil {
+		for _, line := range strings.Split(string(data), "\n") {
+			fields := strings.Split(strings.TrimSpace(line), ",")
+			if len(fields) != 5 || !strings.HasPrefix(fields[0], "org.eclipse.justj.") {
+				continue
+			}
+			bundle, pathErr := eclipseBundlePath(root, fields[2])
+			if pathErr != nil {
+				continue
+			}
+			candidate := filepath.Join(bundle, "jre", "bin", compilerName)
+			if info, statErr := os.Stat(candidate); statErr == nil && info.Mode().IsRegular() {
+				compilers = append(compilers, candidate)
+			}
+		}
+	}
 	compiler, err := exec.LookPath(compilerName)
 	if err != nil && os.Getenv("JAVA_HOME") != "" {
 		candidate := filepath.Join(os.Getenv("JAVA_HOME"), "bin", compilerName)

@@ -218,8 +218,11 @@ the subshell; use both flags to just prepare the lab. Piped/noninteractive
 lesson-start commands never open GUI applications. Explicit `phi open`
 requests do open the document, including with redirected input/output. Handouts from `word_doc/` are embedded
 in the executable and copied, so the original documents stay available.
-Shared handouts are copied to each relevant lab. Reopening a lab preserves
-document edits and restores the handout if it is missing. If opening fails,
+Exercises that share a handout open the same file in Phi's configuration folder
+under `handouts/`. Your word processor can reuse its existing document window
+as you move between these exercises. The shared file preserves your edits;
+its first opening uses the current lab's copy, including existing annotations.
+Lab folders also retain their own copies for portability. If opening fails,
 the CLI prints the document path and you can open it manually.
 
 Eclipse is the default IDE for `phi start` in interactive terminals. You can
@@ -257,6 +260,8 @@ when Eclipse is selected and IDE opening is enabled. It searches `PATH` and
 standard Eclipse Installer folders, or uses your saved `editor-path`. It uses
 Eclipse's console launcher for verification and can find `javac` through
 `JAVA_HOME` when it is missing from `PATH`. Other editor selections are preserved.
+Eclipse Installer's shared `.p2` bundle pool is supported; plugin locations are
+resolved from Eclipse's installed bundle index.
 If automatic discovery fails, run `phi install eclipse "C:\path\to\eclipse.exe"`.
 
 The plugin lives in Phi's private configuration. Eclipse's installed files

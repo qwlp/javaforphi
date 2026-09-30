@@ -21,7 +21,7 @@ import (
 	"github.com/javaforphi/javaforphi/internal/starter"
 )
 
-const version = "0.4.2"
+const version = "0.4.3"
 
 func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 	course, err := catalog.Load(assets)
@@ -305,7 +305,7 @@ func startCommand(arguments []string, assets fs.FS, course *catalog.Catalog, std
 		return commandError(stderr, err.Error())
 	}
 	fmt.Fprintf(stdout, "Folder: %s\n", absDestination)
-	document, err := starter.EnsureDocument(assets, lesson, absDestination)
+	document, err := ensureHandout(assets, lesson, absDestination)
 	if err != nil {
 		return commandError(stderr, err.Error())
 	}

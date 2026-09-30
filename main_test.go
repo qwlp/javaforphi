@@ -315,7 +315,7 @@ func TestExplicitOpenLaunchesHandoutAndPreservesEdits(t *testing.T) {
 		t.Fatalf("open returned %d: %s", code, stderr.String())
 	}
 	root := filepath.Join(workspace, "01-basic-java-programs")
-	document := filepath.Join(root, "LabEx_Basic-Java-Programs_Week1part1.docx")
+	document := filepath.Join(filepath.Dir(config), "handouts", "word_doc", "LabEx_Basic-Java-Programs_Week1part1.docx")
 	opened, err := os.ReadFile(log)
 	openedArgs := strings.Split(strings.TrimSuffix(string(opened), "\n"), "\n")
 	if err != nil || len(openedArgs) == 0 || openedArgs[len(openedArgs)-1] != document || (runtime.GOOS == "linux" && openedArgs[0] != "--writer") {
@@ -349,6 +349,28 @@ func TestExplicitOpenLaunchesHandoutAndPreservesEdits(t *testing.T) {
 	original, _ := assets.ReadFile("word_doc/LabEx_Basic-Java-Programs_Week1part1.docx")
 	if err != nil || !bytes.Equal(contents, original) {
 		t.Fatal("missing handout was not restored")
+	}
+	if code := run("open", "6"); code != 0 {
+		t.Fatal(stderr.String())
+	}
+	shared := filepath.Join(filepath.Dir(config), "handouts", "word_doc", "LabEx_Composition-&-Aggregation_Week2part3.docx")
+	if err := os.WriteFile(shared, []byte("shared annotations"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if code := run("open", "7"); code != 0 {
+		t.Fatal(stderr.String())
+	}
+	opened, err = os.ReadFile(log)
+	openedArgs = strings.Split(strings.TrimSuffix(string(opened), "\n"), "\n")
+	if err != nil || openedArgs[len(openedArgs)-1] != shared {
+		t.Fatalf("shared exercise opened a different file: %q %v", opened, err)
+	}
+	contents, err = os.ReadFile(shared)
+	if err != nil || string(contents) != "shared annotations" {
+		t.Fatalf("shared annotations were overwritten: %v", err)
+	}
+	if code := run("start", "8", workspace, "--no-open", "--no-shell", "--no-editor"); code != 0 || !strings.Contains(stdout.String(), shared) {
+		t.Fatalf("start did not reuse shared handout: %s %s", stdout.String(), stderr.String())
 	}
 	if err := os.WriteFile(launcher, []byte("#!/bin/sh\nprintf '%s\\n' 'Word processor failed' >&2\nexit 7\n"), 0755); err != nil {
 		t.Fatal(err)

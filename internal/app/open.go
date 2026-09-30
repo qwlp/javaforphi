@@ -53,7 +53,7 @@ func openCommand(arguments []string, assets fs.FS, course *catalog.Catalog, stdo
 	if !matches || initialized.ID != lesson.ID {
 		return commandError(stderr, "the destination is not an initialized folder for this lesson: "+directory)
 	}
-	document, err := starter.EnsureDocument(assets, lesson, directory)
+	document, err := ensureHandout(assets, lesson, directory)
 	if err != nil {
 		return commandError(stderr, err.Error())
 	}
