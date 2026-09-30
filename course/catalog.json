@@ -1,0 +1,286 @@
+{
+  "name": "Java for Phi",
+  "description": "A three-week, locally checked introduction to Java and object-oriented programming.",
+  "lessons": [
+    {
+      "id": "week-1/basic-java-programs",
+      "week": 1,
+      "title": "Basic Java Programs",
+      "description": "Primitive types, selection, iteration, enums, and arrays.",
+      "project": "BasicJavaPrograms",
+      "archive": "material/week_1/labs/BasicJavaPrograms.zip",
+      "readme": "course/week-1/exercises/basic-java-programs/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    },
+    {
+      "id": "week-1/using-objects",
+      "week": 1,
+      "title": "Using Objects",
+      "description": "Strings, arrays of objects, immutability, and Scanner input.",
+      "project": "UsingObjects",
+      "archive": "material/week_1/labs/UsingObjects.zip",
+      "readme": "course/week-1/exercises/using-objects/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    },
+    {
+      "id": "week-1/custom-classes",
+      "week": 1,
+      "title": "Your First Custom Classes",
+      "description": "Constructors, methods, encapsulation, equality, and CDTrack.",
+      "project": "MyFirstClasses",
+      "archive": "material/week_1/labs/MyFirstClasses.zip",
+      "readme": "course/week-1/exercises/custom-classes/readme.md",
+      "java_release": 17,
+      "check": {
+        "type": "junit4",
+        "test_source": "archive",
+        "test_classes": ["lib.CounterTest", "lib.NameTest", "lib.CDTrackTest"]
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
+    },
+    {
+      "id": "week-2/more-custom-classes",
+      "week": 2,
+      "title": "More Custom Classes",
+      "description": "Die, OrderLine, Module, validation, and unit testing.",
+      "project": "MoreCustomClasses",
+      "archive": "material/week_2/labs/MoreCustomClasses.zip",
+      "readme": "course/week-2/exercises/more-custom-classes/readme.md",
+      "java_release": 17,
+      "check": {
+        "type": "junit4",
+        "test_source": "archive",
+        "test_classes": ["lib.OrderLineTest", "lib.ModuleTest"]
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
+    },
+    {
+      "id": "week-2/array-lists",
+      "week": 2,
+      "title": "The ArrayList Collection",
+      "description": "Lists, generics, for-each loops, lambdas, and streams.",
+      "project": "ArrayLists",
+      "archive": "material/week_2/labs/ArrayLists.zip",
+      "readme": "course/week-2/exercises/array-lists/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    },
+    {
+      "id": "week-2/composition",
+      "week": 2,
+      "title": "Composition",
+      "description": "Build objects from other objects and delegate behavior.",
+      "project": "Composition",
+      "archive": "material/week_2/labs/Composition.zip",
+      "readme": "course/week-2/exercises/composition/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    },
+    {
+      "id": "week-2/player-composition",
+      "week": 2,
+      "title": "Portfolio A.1: Player Composition",
+      "description": "Compose Player from Name and PairOfDice and delegate dice behavior.",
+      "project": "StartingPlayer",
+      "archive": "material/week_2/labs/StartingPlayer.zip",
+      "readme": "course/week-2/exercises/player-composition/readme.md",
+      "java_release": 17,
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "course/week-2/exercises/player-composition/tests",
+        "test_classes": ["course.tests.PlayerFoundationTest"]
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
+    },
+    {
+      "id": "week-2/aggregation",
+      "week": 2,
+      "title": "Aggregation",
+      "description": "PlayList and EmployeeRegister as collection-owning classes.",
+      "project": "Aggregation",
+      "archive": "material/week_2/labs/Aggregation.zip",
+      "readme": "course/week-2/exercises/aggregation/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    },
+    {
+      "id": "week-2/register",
+      "week": 2,
+      "title": "Portfolio B: Register",
+      "description": "A capacity-limited aggregate with searching, iteration, and sorting.",
+      "project": "PortfolioRegister",
+      "archive": "material/week_2/labs/PortfolioRegister.zip",
+      "readme": "course/week-2/exercises/register/readme.md",
+      "java_release": 17,
+      "check": {
+        "type": "junit4",
+        "test_source": "archive",
+        "test_classes": ["lib.RegisterTest", "main.RegisterAppTest"]
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
+    },
+    {
+      "id": "week-3/player",
+      "week": 3,
+      "title": "Portfolio A: Polymorphic Player",
+      "description": "Use Rollable, transform player data, and implement Comparable.",
+      "project": "PortfolioPlayer",
+      "archive": "material/week_3/labs/PortfolioPlayer.zip",
+      "readme": "course/week-3/exercises/player/readme.md",
+      "java_release": 17,
+      "check": {
+        "type": "junit4",
+        "test_source": "archive",
+        "test_classes": ["lib.PlayerTest", "main.PlayerAppTest"]
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
+    },
+    {
+      "id": "week-3/interface-types",
+      "week": 3,
+      "title": "Interface Types",
+      "description": "Rollable, Iterable, Comparable, and a generic Measurable analysis.",
+      "project": "InterfaceTypes",
+      "archive": "material/week_3/labs/InterfaceTypes.zip",
+      "readme": "course/week-3/exercises/interface-types/readme.md",
+      "java_release": 17,
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "course/week-3/exercises/interface-types/tests",
+        "test_classes": ["course.tests.InterfaceTypesLabTest"]
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
+    },
+    {
+      "id": "week-3/countable",
+      "week": 3,
+      "title": "Countable Interface",
+      "description": "A focused example of interface-based polymorphism.",
+      "project": "countable",
+      "archive": "material/week_3/labs/countable.zip",
+      "readme": "course/week-3/exercises/countable/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    },
+    {
+      "id": "week-3/price-policy",
+      "week": 3,
+      "title": "Price Policy Strategy",
+      "description": "Swap pricing behavior through a common interface.",
+      "project": "pricePolicy",
+      "archive": "material/week_3/labs/pricePolicy.zip",
+      "readme": "course/week-3/exercises/price-policy/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    },
+    {
+      "id": "week-3/inheritance",
+      "week": 3,
+      "title": "Inheritance",
+      "description": "Specialized counters and bank-account hierarchies.",
+      "project": "Inheritance",
+      "archive": "material/week_3/labs/Inheritance.zip",
+      "readme": "course/week-3/exercises/inheritance/readme.md",
+      "java_release": 17,
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "course/week-3/exercises/inheritance/tests",
+        "test_classes": ["course.tests.InheritanceLabTest"]
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
+    },
+    {
+      "id": "week-3/comparable-iterable",
+      "week": 3,
+      "title": "Comparable and Iterable Example",
+      "description": "A worked employee-register example using standard Java interfaces.",
+      "project": "Comparable_Iterable_example",
+      "archive": "material/week_3/labs/Comparable_Iterable_example.zip",
+      "readme": "course/week-3/exercises/comparable-iterable/readme.md",
+      "java_release": 17,
+      "check": { "type": "compile" }
+    }
+  ]
+}
