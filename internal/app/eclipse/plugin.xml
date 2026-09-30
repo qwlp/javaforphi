@@ -8,4 +8,9 @@
       <run class="phi.eclipse.ImportApplication"/>
     </application>
   </extension>
+  <extension point="org.eclipse.core.runtime.applications" id="verify">
+    <application cardinality="singleton-global" thread="main" visible="false">
+      <run class="phi.eclipse.VerifyApplication"/>
+    </application>
+  </extension>
 </plugin>

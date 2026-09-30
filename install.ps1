@@ -2,6 +2,7 @@ $ErrorActionPreference = 'Stop'
 if ($env:OS -ne 'Windows_NT') { throw 'Use install.sh on Linux or macOS.' }
 $installDir = Join-Path $env:LOCALAPPDATA 'Programs\Phi'
 $legacyDir = Join-Path $env:LOCALAPPDATA 'Phi'
+$wasInstalled = (Test-Path (Join-Path $installDir 'bin\phi.exe')) -or (Test-Path (Join-Path $legacyDir 'bin\phi.exe'))
 $marker = Join-Path $installDir '.phi-install'
 if (Test-Path $installDir) {
     if (((Get-Item $installDir).Attributes -band [IO.FileAttributes]::ReparsePoint) -or !(Test-Path $marker)) {
@@ -116,6 +117,15 @@ try {
     ConvertTo-Json -InputObject @($added | Select-Object -Unique) | Set-Content $tracking
     [Environment]::SetEnvironmentVariable('Path', ($entries -join ';'), 'User')
     & (Join-Path $installDir 'bin\phi.exe') version
+    # Keep this in the installer so older update.ps1 versions also repair Eclipse
+    # on their first update after pulling the new checkout.
+    if ($wasInstalled) {
+        Write-Host 'Checking the configured Eclipse integration...'
+        & (Join-Path $installDir 'bin\phi.exe') install eclipse --if-selected
+        if ($LASTEXITCODE -ne 0) {
+            throw 'Phi was updated, but Eclipse integration needs attention. Run phi install eclipse "C:\path\to\eclipse.exe" and check that a compatible JDK is available.'
+        }
+    }
     Write-Host 'Installed phi. Run phi doctor. Restart other terminals to refresh PATH.'
 } finally {
     Remove-Item -Recurse -Force $stage

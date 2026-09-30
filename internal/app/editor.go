@@ -14,14 +14,13 @@ func openEditor(settings Settings, directory string, stdout io.Writer) error {
 	if settings.Editor == "none" {
 		return nil
 	}
-	if settings.Editor == "eclipse" && settings.EclipseWorkspace == "" {
-		path, err := settingsPath()
+
+	if settings.Editor == "eclipse" {
+		workspace, err := resolveEclipseWorkspace(settings.EclipseWorkspace)
 		if err != nil {
 			return err
 		}
-		settings.EclipseWorkspace = filepath.Join(filepath.Dir(path), "eclipse-workspace")
-	}
-	if settings.Editor == "eclipse" {
+		settings.EclipseWorkspace = workspace
 		launch, err := prepareEclipse(settings, directory)
 		if err != nil {
 			return err

@@ -232,6 +232,38 @@ phi settings set editor none       # disable IDE opening
 phi settings                      # view settings and their file location
 ```
 
+Install and verify the Phi plugin for an existing Eclipse installation:
+
+```sh
+phi install eclipse
+```
+
+If Eclipse is not on PATH, provide its launcher or macOS application bundle:
+
+```sh
+phi install eclipse "/path/to/eclipse"
+# Alias: phi plugin install eclipse "/path/to/eclipse"
+```
+
+On Windows, pass the path to `eclipse.exe`. This command builds Phi's bundled
+import plugin, verifies it in a temporary headless workspace, then selects
+Eclipse as your editor and enables IDE opening. Existing settings are saved
+only after verification succeeds. A custom `eclipse-workspace` is preserved.
+Rerunning the command reuses the matching cached plugin configuration.
+It requires Eclipse to be installed already; it does not download the IDE.
+
+On Windows, `phi update` also installs and verifies this plugin automatically
+when Eclipse is selected and IDE opening is enabled. It searches `PATH` and
+standard Eclipse Installer folders, or uses your saved `editor-path`. It uses
+Eclipse's console launcher for verification and can find `javac` through
+`JAVA_HOME` when it is missing from `PATH`. Other editor selections are preserved.
+If automatic discovery fails, run `phi install eclipse "C:\path\to\eclipse.exe"`.
+
+The plugin lives in Phi's private configuration. Eclipse's installed files
+remain untouched, so no administrator access is required. Start Eclipse
+through `phi next` or `phi go <number>` to load this configuration. Close an
+existing Eclipse window once if it uses an earlier Phi configuration.
+
 Select one editor. IntelliJ opens the lab folder directly. Eclipse automatically
 imports the lab into its shared workspace **at the original lab path**. It does
 not copy your source files. Eclipse, `phi check`, and `phi submit` therefore use

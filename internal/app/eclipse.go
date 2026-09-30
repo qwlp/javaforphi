@@ -108,6 +108,10 @@ func locateEclipse(settings Settings) (string, string, error) {
 			home, _ := os.UserHomeDir()
 			candidates = append(candidates, "/Applications/Eclipse.app", filepath.Join(home, "Applications", "Eclipse.app"))
 		}
+		if runtime.GOOS == "windows" {
+			home, _ := os.UserHomeDir()
+			candidates = append(candidates, windowsEclipseCandidates(home, os.Getenv("LOCALAPPDATA"), os.Getenv("ProgramFiles"))...)
+		}
 	}
 	for _, candidate := range candidates {
 		if strings.HasSuffix(strings.ToLower(candidate), ".app") {
@@ -129,6 +133,28 @@ func locateEclipse(settings Settings) (string, string, error) {
 		}
 	}
 	return "", "", fmt.Errorf("cannot locate Eclipse's plugins; set phi settings set editor-path to its executable or .app bundle")
+}
+
+func windowsEclipseCandidates(home, localAppData, programFiles string) []string {
+	var candidates []string
+	for _, base := range []string{home, localAppData, programFiles} {
+		if base == "" {
+			continue
+		}
+		for _, relative := range [][]string{
+			{"eclipse", "eclipse.exe"},
+			{"eclipse", "*", "eclipse", "eclipse.exe"},
+			{"eclipse", "*", "eclipse.exe"},
+			{"Programs", "Eclipse", "eclipse.exe"},
+		} {
+			matches, _ := filepath.Glob(filepath.Join(append([]string{base}, relative...)...))
+			// Prefer newer version folders in standard Eclipse Installer layouts.
+			for i := len(matches) - 1; i >= 0; i-- {
+				candidates = append(candidates, matches[i])
+			}
+		}
+	}
+	return candidates
 }
 
 func fileURL(path string) string {
@@ -249,6 +275,12 @@ func compileEclipseHelper(root, stage string) error {
 	}
 	compilers, _ := filepath.Glob(filepath.Join(root, "plugins", "org.eclipse.justj.*", "jre", "bin", compilerName))
 	compiler, err := exec.LookPath(compilerName)
+	if err != nil && os.Getenv("JAVA_HOME") != "" {
+		candidate := filepath.Join(os.Getenv("JAVA_HOME"), "bin", compilerName)
+		if info, statErr := os.Stat(candidate); statErr == nil && info.Mode().IsRegular() {
+			compiler, err = candidate, nil
+		}
+	}
 	if len(compilers) > 0 {
 		compiler = compilers[len(compilers)-1]
 		err = nil

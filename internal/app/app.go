@@ -21,7 +21,7 @@ import (
 	"github.com/javaforphi/javaforphi/internal/starter"
 )
 
-const version = "0.4.1"
+const version = "0.4.2"
 
 func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 	course, err := catalog.Load(assets)
@@ -54,6 +54,13 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 		return updateCommand(ctx, stdout, stderr)
 	case "settings":
 		return settingsCommand(arguments[1:], stdout, stderr)
+	case "install":
+		return installIntegrationCommand(arguments[1:], stdout, stderr)
+	case "plugin":
+		if len(arguments) < 2 || arguments[1] != "install" {
+			return commandError(stderr, "usage: phi plugin install eclipse [eclipse-executable]")
+		}
+		return installIntegrationCommand(arguments[2:], stdout, stderr)
 	case "open":
 		return openCommand(arguments[1:], assets, course, stdout, stderr)
 	case "setup":
@@ -485,6 +492,8 @@ Usage:
     --no-open                           copy the document without opening it
     --no-editor                         skip opening the configured IDE
   phi list                              aliases: l, ls
+  phi install eclipse [executable]      install and verify the Phi Eclipse plugin
+  phi plugin install eclipse [exe]      alias for phi install eclipse
   phi open [number [workspace]]         open the Word handout
   phi show [number]                     alias:   s
   phi hint [number]                     reveal an optional lesson hint
