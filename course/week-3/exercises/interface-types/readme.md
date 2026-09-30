@@ -30,7 +30,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 Implement one interface at a time. For compareTo, compare the next field only when the previous comparison returns zero.
 

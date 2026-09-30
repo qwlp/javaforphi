@@ -280,7 +280,7 @@ func explainFailure(output io.Writer, detail string, compile bool, root string) 
 			if relative, err := filepath.Rel(root, filename); err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(os.PathSeparator)) {
 				filename = relative
 			}
-			fmt.Fprintf(output, "First error: %s:%s — %s\n", filename, match[2], match[3])
+			fmt.Fprintf(output, "First error: %s:%s: %s\n", filename, match[2], match[3])
 		}
 		fmt.Fprintln(output, "Next: fix the first compiler error, save your files, and run phi check again.")
 	} else {

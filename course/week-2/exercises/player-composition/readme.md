@@ -29,7 +29,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 Keep the supplied Name and PairOfDice references. Delegate rolling and score retrieval to the stored dice object.
 

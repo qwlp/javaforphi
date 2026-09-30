@@ -28,7 +28,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 Express the weighting invariant in one place: the other weight is `100 - newWeight`. Test equality using two distinct objects with equal values.
 

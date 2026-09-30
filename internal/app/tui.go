@@ -238,9 +238,9 @@ func (m courseScreen) View() tea.View {
 		}
 		if len(m.course.Lessons) > 0 {
 			lesson := m.course.Lessons[m.cursor]
-			mode := "Compile only — run the demos to verify behavior"
+			mode := "Compile only: run the demos to verify behavior"
 			if lesson.Check.Type == "junit4" {
-				mode = "Behavior tests — checks the lesson requirements"
+				mode = "Behavior tests: checks the lesson requirements"
 			}
 			body.WriteString("\n" + m.paint(ansi.Truncate(lesson.Description, width, "…"), "#E2E8F0", false) + "\n" + m.paint(ansi.Truncate(mode, width, "…"), "#94A3B8", false))
 		}

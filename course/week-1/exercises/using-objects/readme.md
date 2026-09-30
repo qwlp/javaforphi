@@ -34,7 +34,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 String methods return a new value. After reading a number with Scanner, check whether the trailing newline still needs to be consumed.
 

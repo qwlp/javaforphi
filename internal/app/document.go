@@ -67,7 +67,7 @@ func launchDocument(command *exec.Cmd, asynchronous bool) error {
 			detail = detail[:2000]
 		}
 		if detail != "" {
-			return fmt.Errorf("%s: %w — %s", command.Path, err, detail)
+			return fmt.Errorf("%s: %w: %s", command.Path, err, detail)
 		}
 		return fmt.Errorf("%s: %w", command.Path, err)
 	}

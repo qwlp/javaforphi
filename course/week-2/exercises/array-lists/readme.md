@@ -33,7 +33,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 Use a typed list such as `ArrayList<String>`. Guard an average calculation when the list is empty.
 

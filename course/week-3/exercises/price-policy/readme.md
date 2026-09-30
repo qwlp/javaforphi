@@ -32,7 +32,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 Keep pricing rules inside policy classes. Try the same quantity against each policy to see how the strategies differ.
 

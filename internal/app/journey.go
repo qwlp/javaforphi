@@ -81,11 +81,11 @@ func homeCommand(course *catalog.Catalog, stdout, stderr io.Writer) int {
 	}
 	fmt.Fprintf(stdout, "%s\n%d of %d lessons completed\nWorkspace: %s\n", course.Name, completed, len(course.Lessons), workspace)
 	if lesson, _, ok := lessonContext(".", course); ok {
-		fmt.Fprintf(stdout, "\nCurrent: Lesson %d — %s\n  phi show    Read instructions\n  phi check   Check your work\n  phi submit  Record completion\n", lesson.Number, lesson.Title)
+		fmt.Fprintf(stdout, "\nCurrent: Lesson %d: %s\n  phi show    Read instructions\n  phi check   Check your work\n  phi submit  Record completion\n", lesson.Number, lesson.Title)
 	} else if unfinished != nil {
-		fmt.Fprintf(stdout, "\nContinue: Lesson %d — %s\n  phi resume\n", unfinished.Number, unfinished.Title)
+		fmt.Fprintf(stdout, "\nContinue: Lesson %d: %s\n  phi resume\n", unfinished.Number, unfinished.Title)
 	} else if unstarted != nil {
-		fmt.Fprintf(stdout, "\nStart: Lesson %d — %s\n  phi next\n", unstarted.Number, unstarted.Title)
+		fmt.Fprintf(stdout, "\nStart: Lesson %d: %s\n  phi next\n", unstarted.Number, unstarted.Title)
 	} else {
 		fmt.Fprintln(stdout, "\nAll lessons completed! Use phi list to revisit a lesson.")
 	}

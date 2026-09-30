@@ -356,7 +356,7 @@ func terminalCheck(command string, assets fs.FS, lesson catalog.Lesson, director
 		return 130
 	}
 	if final.done.err != nil {
-		fmt.Fprintf(stdout, "FAILED: lesson %d — %s\n", lesson.Number, lesson.Title)
+		fmt.Fprintf(stdout, "FAILED: lesson %d: %s\n", lesson.Number, lesson.Title)
 		if final.total > 0 {
 			fmt.Fprintf(stdout, "%d passed, %d failed.\n", max(0, final.total-final.failed), final.failed)
 		}
@@ -378,7 +378,7 @@ func terminalCheck(command string, assets fs.FS, lesson catalog.Lesson, director
 		fmt.Fprintln(stdout, "Save your fixes and run phi check again. Full text output: PHI_PLAIN=1 phi check")
 		return 1
 	}
-	fmt.Fprintf(stdout, "PASS: lesson %d — %s (%d behavioral cases)\n", lesson.Number, lesson.Title, final.total)
+	fmt.Fprintf(stdout, "PASS: lesson %d: %s (%d behavioral cases)\n", lesson.Number, lesson.Title, final.total)
 	if command == "submit" {
 		fmt.Fprintf(stdout, "Submitted lesson %d locally: %s\nReceipt: %s\nNext: phi next\n", lesson.Number, lesson.Title, final.done.receipt)
 	} else {

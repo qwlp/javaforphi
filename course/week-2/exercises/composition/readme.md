@@ -32,7 +32,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 Follow a method call from the outer object to the contained object. Delegate instead of duplicating the contained object’s calculations.
 

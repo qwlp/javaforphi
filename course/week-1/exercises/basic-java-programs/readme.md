@@ -34,7 +34,7 @@ For an optional clue, run `phi hint`.
 Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
 
 <details>
-<summary>Hint — open if you get stuck</summary>
+<summary>Hint: open if you get stuck</summary>
 
 Use a decimal literal such as `5.0` when you need floating-point division. Test grade boundaries at 39, 40, 59, 60, 69, and 70.
 
