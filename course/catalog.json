@@ -4,6 +4,7 @@
   "lessons": [
     {
       "id": "week-1/basic-java-programs",
+      "document": "word_doc/LabEx_Basic-Java-Programs_Week1part1.docx",
       "week": 1,
       "title": "Basic Java Programs",
       "description": "Primitive types, selection, iteration, enums, and arrays.",
@@ -15,6 +16,7 @@
     },
     {
       "id": "week-1/using-objects",
+      "document": "word_doc/LabEx_Using-Objects_Week1part2.docx",
       "week": 1,
       "title": "Using Objects",
       "description": "Strings, arrays of objects, immutability, and Scanner input.",
@@ -26,6 +28,7 @@
     },
     {
       "id": "week-1/custom-classes",
+      "document": "word_doc/LabEx_Custom-Classes_Week1part3.docx",
       "week": 1,
       "title": "Your First Custom Classes",
       "description": "Constructors, methods, encapsulation, equality, and CDTrack.",
@@ -53,6 +56,7 @@
     },
     {
       "id": "week-2/more-custom-classes",
+      "document": "word_doc/LabEx_More-Custom-Classes_Week2part1.docx",
       "week": 2,
       "title": "More Custom Classes",
       "description": "Die, OrderLine, Module, validation, and unit testing.",
@@ -80,6 +84,7 @@
     },
     {
       "id": "week-2/array-lists",
+      "document": "word_doc/LabEx_The-ArrayList-Collection_Week2part2.docx",
       "week": 2,
       "title": "The ArrayList Collection",
       "description": "Lists, generics, for-each loops, lambdas, and streams.",
@@ -91,6 +96,7 @@
     },
     {
       "id": "week-2/composition",
+      "document": "word_doc/LabEx_Composition-&-Aggregation_Week2part3.docx",
       "week": 2,
       "title": "Composition",
       "description": "Build objects from other objects and delegate behavior.",
@@ -102,6 +108,7 @@
     },
     {
       "id": "week-2/player-composition",
+      "document": "word_doc/LabEx_Composition-&-Aggregation_Week2part3.docx",
       "week": 2,
       "title": "Portfolio A.1: Player Composition",
       "description": "Compose Player from Name and PairOfDice and delegate dice behavior.",
@@ -130,6 +137,7 @@
     },
     {
       "id": "week-2/aggregation",
+      "document": "word_doc/LabEx_Composition-&-Aggregation_Week2part3.docx",
       "week": 2,
       "title": "Aggregation",
       "description": "PlayList and EmployeeRegister as collection-owning classes.",
@@ -141,6 +149,7 @@
     },
     {
       "id": "week-2/register",
+      "document": "word_doc/LabEx_Composition-&-Aggregation_Week2part3.docx",
       "week": 2,
       "title": "Portfolio B: Register",
       "description": "A capacity-limited aggregate with searching, iteration, and sorting.",
@@ -168,6 +177,7 @@
     },
     {
       "id": "week-3/player",
+      "document": "word_doc/LabEx_Interface-Types_Week3part1.docx",
       "week": 3,
       "title": "Portfolio A: Polymorphic Player",
       "description": "Use Rollable, transform player data, and implement Comparable.",
@@ -195,6 +205,7 @@
     },
     {
       "id": "week-3/interface-types",
+      "document": "word_doc/LabEx_Interface-Types_Week3part1.docx",
       "week": 3,
       "title": "Interface Types",
       "description": "Rollable, Iterable, Comparable, and a generic Measurable analysis.",
@@ -223,6 +234,7 @@
     },
     {
       "id": "week-3/countable",
+      "document": "word_doc/LabEx_Interface-Types_Week3part1.docx",
       "week": 3,
       "title": "Countable Interface",
       "description": "A focused example of interface-based polymorphism.",
@@ -234,6 +246,7 @@
     },
     {
       "id": "week-3/price-policy",
+      "document": "word_doc/LabEx_Interface-Types_Week3part1.docx",
       "week": 3,
       "title": "Price Policy Strategy",
       "description": "Swap pricing behavior through a common interface.",
@@ -245,6 +258,7 @@
     },
     {
       "id": "week-3/inheritance",
+      "document": "word_doc/LabEx_Inheritance_Week3part3.docx",
       "week": 3,
       "title": "Inheritance",
       "description": "Specialized counters and bank-account hierarchies.",
@@ -273,6 +287,7 @@
     },
     {
       "id": "week-3/comparable-iterable",
+      "document": "word_doc/LabEx_Interface-Types_Week3part1.docx",
       "week": 3,
       "title": "Comparable and Iterable Example",
       "description": "A worked employee-register example using standard Java interfaces.",

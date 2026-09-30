@@ -103,6 +103,9 @@ func Init(assets fs.FS, lesson catalog.Lesson, destination string) error {
 	if err := os.WriteFile(filepath.Join(temporary, "LESSON.md"), lessonText, 0o644); err != nil {
 		return fmt.Errorf("write lesson: %w", err)
 	}
+	if _, err := EnsureDocument(assets, lesson, temporary); err != nil {
+		return err
+	}
 	if err := os.Rename(temporary, absDestination); err != nil {
 		return fmt.Errorf("put starter in place: %w", err)
 	}

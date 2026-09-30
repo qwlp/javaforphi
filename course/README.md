@@ -14,7 +14,7 @@ material/
 
 `catalog.json` is the source of truth. A lesson selects a starter archive and either a `compile` check or a `junit4` check. JUnit tests may come from the original archive (`test_source: archive`) or the lesson's private test tree (`test_source: course`). Test sources are compiled from the executable's embedded copy, not the learner's directory.
 
-Lesson numbers follow the order of entries in `catalog.json`. Keep that order stable after learners have begun the course. `phi start <number>` creates a numbered folder, copies the lesson readme to `LESSON.md`, extracts the starter, and records the stable lesson ID in `.phi.json`.
+Lesson numbers follow the order of entries in `catalog.json`. Keep that order stable after learners have begun the course. `phi start <number>` creates a numbered folder, copies the lesson readme to `LESSON.md`, extracts the starter, and records the stable lesson ID in `.phi.json`. The optional `document` field names an embedded handout under `word_doc/`; it is copied to the lab folder using its original filename. Several lessons can share a handout. Interactive starts open it in a word processor unless `--no-open` is specified.
 
 To add a lesson:
 

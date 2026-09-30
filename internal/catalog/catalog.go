@@ -23,6 +23,7 @@ type Lesson struct {
 	Project     string       `json:"project"`
 	Archive     string       `json:"archive"`
 	Readme      string       `json:"readme"`
+	Document    string       `json:"document,omitempty"`
 	JavaRelease int          `json:"java_release"`
 	Check       Check        `json:"check"`
 	DependsOn   []Dependency `json:"dependencies,omitempty"`

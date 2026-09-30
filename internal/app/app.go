@@ -43,6 +43,13 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 	case "version", "v", "--version":
 		fmt.Fprintf(stdout, "phi %s (%s/%s)\n", version, runtime.GOOS, runtime.GOARCH)
 		return 0
+	case "update", "u":
+		if len(arguments) != 1 {
+			return commandError(stderr, "usage: phi update")
+		}
+		return updateCommand(ctx, stdout, stderr)
+	case "settings":
+		return settingsCommand(arguments[1:], stdout, stderr)
 	case "list", "l", "ls":
 		for _, lesson := range course.Lessons {
 			mode := "compile"
@@ -79,9 +86,13 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 		return initCommand(arguments[1:], assets, course, stdout, stderr)
 	case "start", "go", "g":
 		return startCommand(arguments[1:], assets, course, stdout, stderr)
-	case "check", "c":
+	case "check", "c", "submit":
+		command := "check"
+		if arguments[0] == "submit" {
+			command = "submit"
+		}
 		if len(arguments) > 3 {
-			return commandError(stderr, "usage: phi check [<number> [project-directory]]")
+			return commandError(stderr, fmt.Sprintf("usage: phi %s [<number> [project-directory]]", command))
 		}
 		var lesson catalog.Lesson
 		var ok bool
@@ -100,11 +111,25 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 		if len(arguments) == 3 {
 			directory = arguments[2]
 		}
+		if command == "submit" {
+			initialized, matches := lessonFromMarker(directory, course)
+			if !matches || initialized.ID != lesson.ID {
+				return commandError(stderr, "submit requires an initialized folder for this lesson; use phi start to create it")
+			}
+		}
 		if err := checker.Check(ctx, assets, lesson, directory, stdout); err != nil {
 			if !errors.Is(err, checker.ErrFailed) {
 				fmt.Fprintln(stderr, "error:", err)
 			}
 			return 1
+		}
+		if command == "submit" {
+			receipt, err := recordSubmission(lesson, directory)
+			if err != nil {
+				return commandError(stderr, fmt.Sprintf("record submission: %v", err))
+			}
+			fmt.Fprintf(stdout, "Submitted lesson %d locally: %s\nReceipt: %s\n", lesson.Number, lesson.Title, receipt)
+			fmt.Fprintln(stdout, "This records local completion; no files are uploaded.")
 		}
 		return 0
 	case "check-all", "ca":
@@ -182,21 +207,31 @@ func initCommand(arguments []string, assets fs.FS, course *catalog.Catalog, stdo
 
 func startCommand(arguments []string, assets fs.FS, course *catalog.Catalog, stdout, stderr io.Writer) int {
 	noShell := false
+	noOpen := false
+	noEditor := false
 	var positional []string
 	for _, argument := range arguments {
 		switch argument {
 		case "--no-shell", "-n":
 			noShell = true
+		case "--no-open":
+			noOpen = true
+		case "--no-editor":
+			noEditor = true
 		default:
 			positional = append(positional, argument)
 		}
 	}
 	if len(positional) < 1 || len(positional) > 2 {
-		return commandError(stderr, "usage: phi start <number> [workspace] [--no-shell]")
+		return commandError(stderr, "usage: phi start <number> [workspace] [--no-shell] [--no-open] [--no-editor]")
 	}
 	lesson, ok := course.Find(positional[0])
 	if !ok {
 		return unknownLesson(stderr, positional[0])
+	}
+	settings, err := loadSettings()
+	if err != nil {
+		return commandError(stderr, err.Error())
 	}
 	workspace, err := defaultWorkspace()
 	if err != nil {
@@ -225,8 +260,30 @@ func startCommand(arguments []string, assets fs.FS, course *catalog.Catalog, std
 		return commandError(stderr, err.Error())
 	}
 	fmt.Fprintf(stdout, "Folder: %s\n", absDestination)
+	document, err := starter.EnsureDocument(assets, lesson, absDestination)
+	if err != nil {
+		return commandError(stderr, err.Error())
+	}
+	if document != "" {
+		fmt.Fprintf(stdout, "Lab document: %s\n", document)
+		if !noOpen && stdinIsTerminal() {
+			if err := openDocument(document); err != nil {
+				fmt.Fprintf(stderr, "Could not open the lab document: %v\nOpen the file above in your word processor.\n", err)
+			}
+		}
+	}
+	if !noEditor && stdinIsTerminal() {
+		if err := openEditor(settings, absDestination, stdout); err != nil {
+			fmt.Fprintf(stderr, "Could not open the editor: %v\nOpen the lab folder manually.\n", err)
+		}
+	}
+	fmt.Fprintln(stdout, "\nFrom the lab directory:")
+	fmt.Fprintln(stdout, "  phi show    Read the lesson instructions")
+	fmt.Fprintln(stdout, "  phi check   Test your work")
+	fmt.Fprintln(stdout, "  phi submit  Run checks and record a local submission")
+	fmt.Fprintln(stdout, "Submission is saved in .phi-submission.json after checks pass.")
 	if noShell || !stdinIsTerminal() {
-		fmt.Fprintln(stdout, "Run 'phi check' from that folder when you are ready.")
+		fmt.Fprintln(stdout, "Open the lab directory above to begin.")
 		return 0
 	}
 	fmt.Fprintln(stdout, "Entering the lesson folder. Type 'exit' to return to your previous shell.")
@@ -362,13 +419,19 @@ func usage(output io.Writer) {
 Usage:
   phi <number>                          start a numbered lesson
   phi start <number> [workspace]        aliases: go, g
+    --no-shell                          create the lab without entering a shell
+    --no-open                           copy the document without opening it
+    --no-editor                         skip opening the configured IDE
   phi list                              aliases: l, ls
   phi show [number]                     alias:   s
   phi init <number> [destination]       alias:   i
   phi init --all [workspace]
   phi check [<number> [project-dir]]    alias:   c
+  phi submit [<number> [project-dir]]   check and record local completion
   phi check-all [workspace]             alias:   ca
   phi doctor                            alias:   d
+  phi update                            alias:   u
+  phi settings                         view or change your editor settings
   phi version                           alias:   v
   phi help                              alias:   h`)
 }

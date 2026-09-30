@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <extension point="org.eclipse.ui.startup">
+    <startup class="phi.eclipse.Startup"/>
+  </extension>
+  <extension point="org.eclipse.core.runtime.applications" id="import">
+    <application cardinality="singleton-global" thread="main" visible="false">
+      <run class="phi.eclipse.ImportApplication"/>
+    </application>
+  </extension>
+</plugin>
