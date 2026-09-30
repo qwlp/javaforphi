@@ -107,13 +107,15 @@ func (m courseScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.action = []string{command}
 			return m, tea.Quit
-		case "enter", "c", "s":
+		case "enter", "c", "s", "w":
 			if len(m.course.Lessons) == 0 {
 				return m, nil
 			}
 			lesson := m.course.Lessons[m.cursor]
 			if key == "enter" {
 				m.action = []string{"start", strconv.Itoa(lesson.Number), m.workspace}
+			} else if key == "w" {
+				m.action = []string{"open", strconv.Itoa(lesson.Number), m.workspace}
 			} else {
 				if m.statuses[m.cursor] == "Not started" {
 					m.page = "start-first"
@@ -142,7 +144,7 @@ func (m courseScreen) pageLines() []string {
 	text := ""
 	switch m.page {
 	case "help":
-		text = "Choose a lesson with ↑/↓ or j/k.\n\nEnter   Open the selected lesson\nl       Read its instructions\nh       Reveal its optional hint\nc       Check the selected lesson\ns       Check and record completion\nn       Open the first incomplete lesson\nr       Resume unfinished work\no       Configure your editor and workflow\nq       Quit\n\nCompletion reflects the last successful local submission.\nRun phi submit again after changing your work.\n\nSet PHI_PLAIN=1 to use plain output.\nSet NO_COLOR=1 to disable colors."
+		text = "Choose a lesson with ↑/↓ or j/k.\n\nEnter   Open the selected lesson\nl       Read its instructions\nh       Reveal its optional hint\nw       Open the Word handout\nc       Check the selected lesson\ns       Check and record completion\nn       Open the first incomplete lesson\nr       Resume unfinished work\no       Configure your editor and workflow\nq       Quit\n\nCompletion reflects the last successful local submission.\nRun phi submit again after changing your work.\n\nSet PHI_PLAIN=1 to use plain output.\nSet NO_COLOR=1 to disable colors."
 	case "start-first":
 		text = "Open this lesson first with Enter.\nThen edit its source files and use c to check or s to submit.\n\nPress Esc to return to the course."
 	default:
@@ -242,7 +244,7 @@ func (m courseScreen) View() tea.View {
 			}
 			body.WriteString("\n" + m.paint(ansi.Truncate(lesson.Description, width, "…"), "#E2E8F0", false) + "\n" + m.paint(ansi.Truncate(mode, width, "…"), "#94A3B8", false))
 		}
-		body.WriteString("\n\n" + m.paint(ansi.Hardwrap("↑/↓ choose · Enter open · l lesson · h hint · c check · s submit\nn next · r resume · o setup · ? help · q quit", width, true), "#94A3B8", false))
+		body.WriteString("\n\n" + m.paint(ansi.Hardwrap("↑/↓ choose · Enter start · l read · h hint · w handout\nc check · s submit · n next · r resume · o setup · ? help · q quit", width, true), "#94A3B8", false))
 	}
 	view := tea.NewView(lipgloss.NewStyle().Padding(1, 2).Render(body.String()))
 	view.AltScreen = true

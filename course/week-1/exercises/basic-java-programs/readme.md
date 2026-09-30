@@ -21,9 +21,13 @@ Starter source folders: `src/arrays/`, `src/controlstructures/`, `src/primitives
 
 Temperature conversions retain fractional values; grade labels change at 40, 60, and 70; day classification and multiplication tables match the selected inputs.
 
+## Automated check requirements
+
+For automated checks, `GradeMark.main` reads the mark from `args[0]` (or from standard input) and prints only the grade label. `DaysOfWeek.main` reads the day the same way and prints its name and classification; out-of-range days print `Unknown day`. Keep the 21°C example in `Converter` and preserve its fractional result. `TimesTable` prints all 144 products for tables 1–12 in table order, separated by whitespace, without numeric labels. These input extensions let the checker try boundary values rather than just your hardcoded example.
+
 ## Check your work
 
-Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+Run `phi check` from this lesson folder (or any nested source folder). The embedded behavioral and boundary tests must pass. Compilation is only the first stage; a compiling but incorrect implementation fails.
 
 For an optional clue, run `phi hint`.
 

@@ -26,11 +26,23 @@ jobs:
             goarch: amd64
             artifact: phi-windows-amd64.exe
     runs-on: ${{ matrix.os }}
+    env:
+      PHI_CACHE: ${{ runner.temp }}/phi-dependencies
+      PHI_TEST_CACHE: ${{ runner.temp }}/phi-dependencies
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Cache verified grading dependencies
+        shell: bash
+        run: |
+          go run . init 12 "${{ runner.temp }}/phi-grading-example"
+          go run . check 12 "${{ runner.temp }}/phi-grading-example"
       - name: Test
         run: go test ./...
       - name: Build

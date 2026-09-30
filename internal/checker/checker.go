@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -24,6 +25,27 @@ import (
 var ErrFailed = errors.New("lesson check failed")
 
 func Check(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDirectory string, output io.Writer) error {
+	return CheckWithProgress(ctx, assets, lesson, projectDirectory, output, nil)
+}
+
+func CheckWithProgress(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDirectory string, output io.Writer, emit func(Event)) (resultErr error) {
+	stage := "prepare"
+	notify := func(state string) {
+		if emit != nil {
+			emit(Event{Stage: stage, State: state})
+		}
+	}
+	advance := func(next string) { notify("passed"); stage = next; notify("running") }
+	notify("running")
+	defer func() {
+		if resultErr != nil {
+			notify("failed")
+		} else {
+			notify("passed")
+		}
+	}()
+	ctx, stopSignals := signal.NotifyContext(ctx, os.Interrupt)
+	defer stopSignals()
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 
@@ -74,6 +96,11 @@ func Check(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDire
 		default:
 			return fmt.Errorf("unsupported test source %q", lesson.Check.TestSource)
 		}
+		if lesson.Check.SupportPath != "" {
+			if err := copyEmbeddedTests(assets, lesson.Check.SupportPath, testRoot); err != nil {
+				return err
+			}
+		}
 		tests, err := javaFiles(testRoot)
 		if err != nil {
 			return err
@@ -81,13 +108,23 @@ func Check(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDire
 		if len(tests) == 0 {
 			return errors.New("the lesson has no grading tests")
 		}
+		runner := filepath.Join(testRoot, "phi", "runner", "PhiJUnitRunner.java")
+		if err := os.MkdirAll(filepath.Dir(runner), 0755); err != nil {
+			return err
+		}
+		if err := os.WriteFile(runner, junitRunner, 0644); err != nil {
+			return err
+		}
 		sources = append(sources, tests...)
+		sources = append(sources, runner)
 	}
 
+	advance("dependencies")
 	dependencies, err := resolveDependencies(ctx, lesson.DependsOn)
 	if err != nil {
 		return err
 	}
+	advance("compile")
 	compileArgs := []string{"--release", strconv.Itoa(lesson.JavaRelease), "-encoding", "UTF-8", "-Xmaxerrs", "20", "-d", classes}
 	if len(dependencies) > 0 {
 		compileArgs = append(compileArgs, "-cp", strings.Join(dependencies, string(os.PathListSeparator)))
@@ -96,10 +133,10 @@ func Check(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDire
 	fmt.Fprintf(output, "Checking %s (%d source files)...\n", lesson.Title, len(sources))
 	var compileOutput bytes.Buffer
 	if err := run(ctx, &compileOutput, "javac", compileArgs...); err != nil {
-		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			fmt.Fprintln(output, "\nFAILED: the lesson check exceeded the two-minute limit.")
+		if ctx.Err() != nil {
+			fmt.Fprintf(output, "\nCheck stopped: %v\n", ctx.Err())
 			fmt.Fprint(output, compileOutput.String())
-			return ErrFailed
+			return ctx.Err()
 		}
 		fmt.Fprintln(output, "\nFAILED: Java compilation did not succeed.")
 		explainFailure(output, compileOutput.String(), true, absProject)
@@ -115,26 +152,36 @@ func Check(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDire
 		return fmt.Errorf("unsupported checker type %q", lesson.Check.Type)
 	}
 	classpath := append([]string{classes}, dependencies...)
-	runArgs := []string{"-cp", strings.Join(classpath, string(os.PathListSeparator)), "org.junit.runner.JUnitCore"}
+	advance("tests")
+	runArgs := []string{"-cp", strings.Join(classpath, string(os.PathListSeparator)), "phi.runner.PhiJUnitRunner"}
 	runArgs = append(runArgs, lesson.Check.TestClasses...)
-	var testOutput bytes.Buffer
-	if err := run(ctx, &testOutput, "java", runArgs...); err != nil {
-		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
-			fmt.Fprintln(output, "\nFAILED: the lesson check exceeded the two-minute limit.")
-			fmt.Fprint(output, testOutput.String())
-			return ErrFailed
+	testOutput := caseOutput{emit: emit}
+	runErr := run(ctx, &testOutput, "java", runArgs...)
+	testOutput.finish(output)
+	if emit != nil {
+		emit(Event{Stage: "tests", State: "summary", Total: testOutput.total, Failed: testOutput.failed})
+	}
+	if runErr != nil || testOutput.total == 0 || testOutput.failed > 0 {
+		if ctx.Err() != nil {
+			fmt.Fprintf(output, "\nCheck stopped: %v\n", ctx.Err())
+			fmt.Fprint(output, testOutput.diagnostics.String())
+			return ctx.Err()
 		}
 		fmt.Fprintln(output, "\nFAILED: one or more lesson tests failed.")
-		explainFailure(output, testOutput.String(), false, absProject)
+		if testOutput.total == 0 {
+			fmt.Fprintln(output, "No behavioral cases completed; a successful process exit alone does not establish correctness.")
+		}
+		explainFailure(output, testOutput.diagnostics.String(), false, absProject)
 		return ErrFailed
 	}
-	fmt.Fprint(output, testOutput.String())
-	fmt.Fprintln(output, "PASS: all lesson tests passed.\nWhen ready: phi submit")
+	fmt.Fprint(output, testOutput.diagnostics.String())
+	fmt.Fprintln(output, "PASS: all behavioral tests passed.")
 	return nil
 }
 
 func run(ctx context.Context, output io.Writer, program string, args ...string) error {
 	command := exec.CommandContext(ctx, program, args...)
+	configureProcess(command)
 	command.Stdout = output
 	command.Stderr = output
 	return command.Run()

@@ -19,9 +19,13 @@ Starter source folders: `src/lib/employeeRegister/`, `src/main/`. Follow the tas
 
 The register supports for-each iteration and natural-order sorting. Employees sharing a primary field are ordered using the subsequent comparison fields.
 
+## Automated check requirements
+
+Checks verify family-name/first-name ordering, year/month/day date ordering, Employee name/date/salary tie-breakers, and iteration before and after sorting and removal. Comparison assertions use the sign of `compareTo`, not a particular integer value.
+
 ## Check your work
 
-Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+Run `phi check` from this lesson folder (or any nested source folder). The embedded behavioral and boundary tests must pass. Compilation is only the first stage; a compiling but incorrect implementation fails.
 
 For an optional clue, run `phi hint`.
 

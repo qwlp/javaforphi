@@ -19,9 +19,13 @@ Starter source folders: `src/lib/`, `src/main/`. Follow the tasks below for the 
 
 Calls through Countable dispatch to the appropriate Counter or ModuloCounter behavior without requiring implementation-specific code in the caller.
 
+## Automated check requirements
+
+Checks call through the `Countable` interface, exercise negative and positive plain counter values, and verify modulo wrapping in both directions for several positive moduli. Changing the modulo normalizes the current count. Keep the worked implementation correct as you add interactions.
+
 ## Check your work
 
-Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+Run `phi check` from this lesson folder (or any nested source folder). The embedded behavioral and boundary tests must pass. Compilation is only the first stage; a compiling but incorrect implementation fails.
 
 For an optional clue, run `phi hint`.
 

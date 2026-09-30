@@ -13,7 +13,6 @@ import (
 
 type Settings struct {
 	NoEditor         bool   `json:"no_editor,omitempty"`
-	NoOpen           bool   `json:"no_open,omitempty"`
 	SetupComplete    bool   `json:"setup_complete,omitempty"`
 	Editor           string `json:"editor"`
 	EditorPath       string `json:"editor_path,omitempty"`

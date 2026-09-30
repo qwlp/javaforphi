@@ -56,7 +56,7 @@ func TestCourseScreenNavigationAndHints(t *testing.T) {
 
 func TestCourseScreenActionsAndPlainOutput(t *testing.T) {
 	for key, want := range map[rune][]string{
-		tea.KeyEnter: {"start", "1"}, 'n': {"next"}, 'r': {"resume"}, 'o': {"setup"},
+		tea.KeyEnter: {"start", "1"}, 'n': {"next"}, 'r': {"resume"}, 'o': {"setup"}, 'w': {"open", "1"},
 	} {
 		m := testScreen(t)
 		m = press(m, key)

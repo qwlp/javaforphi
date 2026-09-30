@@ -24,3 +24,19 @@ func TestFailureFeedbackKeepsDiagnosticsAndLeadsWithAction(t *testing.T) {
 		})
 	}
 }
+
+func TestRunnerEventsSurviveSplitWritesAndKeepDiagnostics(t *testing.T) {
+	var events []Event
+	writer := caseOutput{emit: func(event Event) { events = append(events, event) }}
+	for _, piece := range []string{"ordinary output\nPHI_CA", "SE\trunning\tboundary(case)\t\nPHI_CASE\tfailed\tboundary(case)\texpected zero\nPHI_TO", "TAL\t2\t1\nlast diagnostic"} {
+		_, _ = writer.Write([]byte(piece))
+	}
+	var output bytes.Buffer
+	writer.finish(&output)
+	if len(events) != 2 || events[1].State != "failed" || writer.total != 2 || writer.failed != 1 {
+		t.Fatalf("events=%v total=%d failed=%d", events, writer.total, writer.failed)
+	}
+	if !strings.Contains(output.String(), "1 passed, 1 failed") || !strings.Contains(writer.diagnostics.String(), "last diagnostic") || strings.Contains(writer.diagnostics.String(), "PHI_CASE") {
+		t.Fatal(writer.diagnostics.String())
+	}
+}

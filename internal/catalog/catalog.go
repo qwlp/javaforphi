@@ -30,6 +30,7 @@ type Lesson struct {
 }
 
 type Check struct {
+	SupportPath string   `json:"support_path,omitempty"`
 	Type        string   `json:"type"`
 	TestSource  string   `json:"test_source,omitempty"`
 	TestPath    string   `json:"test_path,omitempty"`

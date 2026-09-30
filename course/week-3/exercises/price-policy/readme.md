@@ -19,9 +19,13 @@ Starter source folders: `src/lib/`, `src/main/`. Follow the tasks below for the 
 
 The same order line computes different prices when its policy changes. A new policy works through the existing interface without editing OrderLine.
 
+## Automated check requirements
+
+Checks cover zero, odd, and even quantities; fractional discounts; and policy replacement. `OrderLine.getCost()` must delegate to the stored `PricePolicy`, including a policy implementation the checker supplies. No particular console demo format is required.
+
 ## Check your work
 
-Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+Run `phi check` from this lesson folder (or any nested source folder). The embedded behavioral and boundary tests must pass. Compilation is only the first stage; a compiling but incorrect implementation fails.
 
 For an optional clue, run `phi hint`.
 

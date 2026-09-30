@@ -21,9 +21,13 @@ Starter source folders: `src/scanner/`, `src/strings/`. Follow the tasks below f
 
 String transformations produce the requested initials, email address, and case conversions. Keyboard input is read correctly even when numeric and line input are mixed.
 
+## Automated check requirements
+
+For automated checks, `Initials.main` accepts a two-part full name in `args[0]` (or one standard-input line), then prints uppercase initials and the lowercase email address. `ImmutableDemo.main` accepts a string the same way and prints both the unchanged original and its returned lowercase copy. `StringArrayDemo` prints exactly six uppercase fruit names separated by whitespace. Fix `ScannerSurprise` to consume the newline after `nextDouble()` and print the last sentence or its correct length.
+
 ## Check your work
 
-Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+Run `phi check` from this lesson folder (or any nested source folder). The embedded behavioral and boundary tests must pass. Compilation is only the first stage; a compiling but incorrect implementation fails.
 
 For an optional clue, run `phi hint`.
 

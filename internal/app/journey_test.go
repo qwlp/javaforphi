@@ -39,16 +39,16 @@ func TestProgressRequiresMatchingValidSubmission(t *testing.T) {
 
 func TestWorkflowAndJavaVersions(t *testing.T) {
 	for _, test := range []struct {
-		name             string
-		noOpen, noEditor bool
+		name     string
+		noEditor bool
 	}{
-		{"editor", true, false}, {"terminal", true, true}, {"full", false, false},
+		{"editor", false}, {"terminal", true}, {"full", false},
 	} {
 		var settings Settings
 		if err := setWorkflow(&settings, test.name); err != nil {
 			t.Fatal(err)
 		}
-		if settings.NoOpen != test.noOpen || settings.NoEditor != test.noEditor {
+		if settings.NoEditor != test.noEditor {
 			t.Fatalf("%s: %+v", test.name, settings)
 		}
 	}
@@ -97,7 +97,7 @@ func TestSetupSavesPreferencesEvenWhenJavaIsMissing(t *testing.T) {
 		t.Fatalf("code %d: %s", code, stderr.String())
 	}
 	settings, err := loadSettings()
-	if err != nil || !settings.SetupComplete || settings.Editor != "intellij" || !settings.NoOpen {
+	if err != nil || !settings.SetupComplete || settings.Editor != "intellij" {
 		t.Fatalf("%+v %v", settings, err)
 	}
 	if !strings.Contains(stdout.String(), "Install JDK 17") {

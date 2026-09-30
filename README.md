@@ -29,10 +29,11 @@ browser styled with Charm Lip Gloss: progress, lesson statuses, instructions,
 and optional hints are available without remembering commands.
 
 Use **↑/↓** or **j/k** to choose a lesson, **Enter** to open it, **l** to read,
-**h** for a hint, **c** to check, and **s** to submit. **n** starts the next
+**h** for a hint, **w** to open the Word handout, **c** to check, and **s** to submit. **n** starts the next
 incomplete lesson, **r** resumes, **o** runs setup, **?** shows help, and **q**
 quits. Instructions scroll with arrow keys or Page Up/Page Down; **Esc** returns.
-Actions close the browser before opening apps or running checks.
+Actions close the course browser before opening apps; check and submit open
+their own live checking screen.
 
 Piped output stays plain. Set `PHI_PLAIN=1` to disable the browser, or
 `NO_COLOR=1` to disable its colors. Existing CLI commands remain available.
@@ -61,13 +62,15 @@ Choose a workflow during setup or with `phi settings set workflow <name>`:
 
 | Workflow | What opens |
 | --- | --- |
-| `editor` | Your selected IDE and a lesson shell |
-| `terminal` | A shell in the lesson folder |
-| `full` | IDE, Word handout, and lesson shell |
+| `editor` | Your selected IDE, Word handout, and lesson shell |
+| `terminal` | Word handout and a shell in the lesson folder |
+| `full` | Same as `editor` (supported for compatibility) |
 
 Starting a lesson enters a shell in its folder in every workflow. Use
 `--no-shell` to skip it; type `exit` to return to the previous shell.
-Older saved `no_shell` preferences are ignored.
+Older saved `no_shell` and `no_open` preferences are ignored. Interactive
+`start`, `go`, `next`, and `resume` open the handout by default; use `--no-open`
+to skip it for a particular start.
 Setup defaults to the editor workflow; choosing no editor defaults to terminal.
 The handout is copied in every workflow. Each lesson includes its goal, source
 folders, tasks, expected behavior, checking instructions, and an optional hint.
@@ -195,6 +198,7 @@ is installed automatically. From the lab shell:
 
 ```text
 phi show       # display the current lesson
+phi open       # open its Word handout
 phi check      # check the current exercise
 phi submit     # check and record a successful local submission
 exit           # return to the previous shell
@@ -202,9 +206,17 @@ exit           # return to the previous shell
 
 The marker in `.phi.json` lets these commands find the lesson root even when you run them from a nested folder such as `src/lib`. Set `PHI_WORKSPACE` to choose a different default workspace, or run `phi start 3 ./my-coursework`. Use `--no-shell` (`-n`) when you only want to create the folder.
 
-Use `--no-open` to skip opening the Word document. `--no-shell` controls only
+Use `phi open` inside a lesson folder (including nested source folders) to
+open its handout explicitly. From elsewhere, use `phi open 3` or
+`phi open 3 /path/to/workspace`; Phi prepares the lesson if it is missing.
+This opens the handout without launching an IDE or entering a shell, and
+opens it even when the lesson was started with `--no-open`. Edited handouts are
+preserved; missing handouts are restored from the embedded copy.
+
+Use `--no-open` to skip opening the Word document automatically. `--no-shell` controls only
 the subshell; use both flags to just prepare the lab. Piped/noninteractive
-commands never open GUI applications. Handouts from `word_doc/` are embedded
+lesson-start commands never open GUI applications. Explicit `phi open`
+requests do open the document, including with redirected input/output. Handouts from `word_doc/` are embedded
 in the executable and copied, so the original documents stay available.
 Shared handouts are copied to each relevant lab. Reopening a lab preserves
 document edits and restores the handout if it is missing. If opening fails,
@@ -258,8 +270,7 @@ submitting, including when you use `--no-shell` or reopen an existing lab.
 timestamp, check type, and CLI version. It records completion at that time;
 rerun `phi submit` after changing your work. There is no remote upload or
 submission server. You can also run `phi submit 3 /path/to/lab` from elsewhere.
-Compile-only lessons require successful compilation; graded lessons require
-their tests to pass.
+All shipped lessons require their behavioral tests to pass.
 
 In PowerShell, use `./phi.exe` (or `.\phi.exe` on older PowerShell) in the same commands.
 
@@ -291,7 +302,31 @@ The starter archives, lesson text, and pristine grading tests are embedded in th
 
 ## Checker coverage
 
-The original JUnit suites grade the custom-class, Register, and Player portfolios. Additional tests grade Player composition, inheritance, and interface-type exercises. Demonstration-oriented projects currently receive compile checks. See [course/README.md](course/README.md) for the lesson format and extension points.
+All 15 shipped lessons run behavioral JUnit checks after compilation.
+`phi check` and `phi submit` show a live Bubble Tea screen in a terminal:
+real preparation/compilation/test stages, a spinner, individual case results,
+and passed/failed counts. Press **d** after completion to expand full diagnostics,
+**↑/↓** to scroll, and **Enter** to close. **Ctrl+C** or **q** cancels a running
+check. Scripted and piped commands retain plain output and exit codes.
+
+The eight formerly compile-only lessons now have instructor-owned suites for
+console output, input boundaries, object delegation, collection mutation,
+ordering, wrapping counters, and pricing policies. Console input contracts and
+small testable calculation methods are described in each lesson's
+`Automated check requirements` section. Some worked examples already pass;
+unimplemented tasks and the playlist starter's boundary bugs fail.
+
+Grading cases run from pristine embedded copies in a temporary directory.
+Additional suites under `grading/` are never copied into learner folders;
+edits to a lab's test directory do not change grading. This keeps cases hidden
+from the lab workflow, but an offline open-source checker cannot keep test
+sources secret from someone inspecting the repository or executable.
+
+`phi submit` always checks current files and records completion only after
+checks pass. Failed or cancelled attempts preserve an earlier receipt.
+Legacy compile-only receipts for newly graded lessons no longer count as
+completion; submit again to run the behavioral checks.
+See [course/README.md](course/README.md) for authoring and verification.
 
 ## Cross-compile releases
 

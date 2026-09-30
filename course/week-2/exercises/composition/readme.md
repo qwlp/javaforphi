@@ -19,9 +19,13 @@ Starter source folders: `src/lib/dice/`, `src/lib/employee/`, `src/main/`. Follo
 
 Employee delegates name and date behavior to its contained objects. PairOfDice rolls both dice and reports their combined score through Rollable.
 
+## Automated check requirements
+
+Checks verify that `PairOfDice` retains supplied dice, rolls both objects, and sums their scores. Employee checks cover supplied Name/Date references, setters, and value equality. Test doubles keep dice checks deterministic; you do not need to produce a particular random roll.
+
 ## Check your work
 
-Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+Run `phi check` from this lesson folder (or any nested source folder). The embedded behavioral and boundary tests must pass. Compilation is only the first stage; a compiling but incorrect implementation fails.
 
 For an optional clue, run `phi hint`.
 

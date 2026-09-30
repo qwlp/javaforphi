@@ -21,7 +21,7 @@ import (
 	"github.com/javaforphi/javaforphi/internal/starter"
 )
 
-const version = "0.3.0"
+const version = "0.4.1"
 
 func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 	course, err := catalog.Load(assets)
@@ -54,6 +54,8 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 		return updateCommand(ctx, stdout, stderr)
 	case "settings":
 		return settingsCommand(arguments[1:], stdout, stderr)
+	case "open":
+		return openCommand(arguments[1:], assets, course, stdout, stderr)
 	case "setup":
 		return setupCommand(arguments[1:], stdout, stderr)
 	case "next", "resume":
@@ -139,11 +141,21 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 				return commandError(stderr, "submit requires an initialized folder for this lesson; use phi start to create it")
 			}
 		}
+		if useTUI(stdout) {
+			return terminalCheck(command, assets, lesson, directory, stdout, stderr)
+		}
 		if err := checker.Check(ctx, assets, lesson, directory, stdout); err != nil {
+			if errors.Is(err, context.Canceled) {
+				fmt.Fprintln(stderr, "Check cancelled. No new completion was recorded.")
+				return 130
+			}
 			if !errors.Is(err, checker.ErrFailed) {
 				fmt.Fprintln(stderr, "error:", err)
 			}
 			return 1
+		}
+		if command == "check" {
+			fmt.Fprintln(stdout, "Next: phi submit")
 		}
 		if command == "submit" {
 			receipt, err := recordSubmission(lesson, directory)
@@ -170,6 +182,9 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 			fmt.Fprintf(stdout, "\n=== %s ===\n", lesson.ID)
 			project := findLessonDirectory(workspace, lesson)
 			if err := checker.Check(ctx, assets, lesson, project, stdout); err != nil {
+				if errors.Is(err, context.Canceled) {
+					return 130
+				}
 				failures++
 				if !errors.Is(err, checker.ErrFailed) {
 					fmt.Fprintln(stdout, "ERROR:", err)
@@ -255,7 +270,6 @@ func startCommand(arguments []string, assets fs.FS, course *catalog.Catalog, std
 	if err != nil {
 		return commandError(stderr, err.Error())
 	}
-	noOpen = noOpen || settings.NoOpen
 	noEditor = noEditor || settings.NoEditor
 	workspace, err := defaultWorkspace()
 	if err != nil {
@@ -303,6 +317,7 @@ func startCommand(arguments []string, assets fs.FS, course *catalog.Catalog, std
 	}
 	fmt.Fprintln(stdout, "\nFrom the lab directory:")
 	fmt.Fprintln(stdout, "  phi show    Read the lesson instructions")
+	fmt.Fprintln(stdout, "  phi open    Open the Word handout")
 	fmt.Fprintln(stdout, "  phi check   Test your work")
 	fmt.Fprintln(stdout, "  phi submit  Run checks and record a local submission")
 	fmt.Fprintln(stdout, "Submission is saved in .phi-submission.json after checks pass.")
@@ -470,6 +485,7 @@ Usage:
     --no-open                           copy the document without opening it
     --no-editor                         skip opening the configured IDE
   phi list                              aliases: l, ls
+  phi open [number [workspace]]         open the Word handout
   phi show [number]                     alias:   s
   phi hint [number]                     reveal an optional lesson hint
   phi init <number> [destination]       alias:   i

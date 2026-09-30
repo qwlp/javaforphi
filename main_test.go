@@ -7,8 +7,10 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
+	"testing/fstest"
 	"time"
 
 	"github.com/javaforphi/javaforphi/internal/app"
@@ -106,6 +108,9 @@ func TestSubmitChecksBeforeRecordingCompletion(t *testing.T) {
 			t.Skip("submission integration test requires a JDK")
 		}
 	}
+
+	// This test isolates receipt mechanics; behavioral grading is covered separately.
+	testAssets := fstest.MapFS{"course/catalog.json": &fstest.MapFile{Data: []byte(`{"lessons":[{"id":"week-1/basic-java-programs","title":"Basic Java Programs","project":"BasicJavaPrograms","archive":"unused.zip","check":{"type":"compile"}},{"id":"week-1/using-objects","project":"UsingObjects","archive":"unused.zip","check":{"type":"compile"}}]}`)}}
 	root := t.TempDir()
 	src := filepath.Join(root, "src")
 	if err := os.Mkdir(src, 0755); err != nil {
@@ -124,7 +129,7 @@ func TestSubmitChecksBeforeRecordingCompletion(t *testing.T) {
 	run := func(args ...string) int {
 		stdout.Reset()
 		stderr.Reset()
-		return app.Run(args, assets, &stdout, &stderr)
+		return app.Run(args, testAssets, &stdout, &stderr)
 	}
 	write(source, "invalid Java")
 	if code := run("submit", "1", root); code == 0 {
@@ -232,7 +237,7 @@ func TestGuidedNavigationAndProgress(t *testing.T) {
 	if output := run("resume", "--no-shell", "--no-open", "--no-editor"); !strings.Contains(output, "Opening existing lesson 1") {
 		t.Fatal(output)
 	}
-	receipt := `{"lesson":"week-1/basic-java-programs","number":1,"check_type":"compile","local":true,"submitted_at":"2026-09-30T12:00:00Z"}`
+	receipt := `{"lesson":"week-1/basic-java-programs","number":1,"check_type":"junit4","local":true,"submitted_at":"2026-09-30T12:00:00Z"}`
 	if err := os.WriteFile(filepath.Join(first, ".phi-submission.json"), []byte(receipt), 0644); err != nil {
 		t.Fatal(err)
 	}
@@ -274,5 +279,81 @@ func TestLessonGuidanceIsComplete(t *testing.T) {
 				t.Errorf("%s missing %s", lesson.ID, required)
 			}
 		}
+	}
+}
+
+func TestExplicitOpenLaunchesHandoutAndPreservesEdits(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("launcher fixture uses a Unix shell")
+	}
+	bin := t.TempDir()
+	log := filepath.Join(t.TempDir(), "opened.txt")
+	launcherName := "libreoffice"
+	if runtime.GOOS == "darwin" {
+		launcherName = "open"
+	}
+	launcher := filepath.Join(bin, launcherName)
+	if err := os.WriteFile(launcher, []byte("#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$PHI_TEST_OPEN_LOG\"\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin)
+	t.Setenv("PHI_TEST_OPEN_LOG", log)
+	config := filepath.Join(t.TempDir(), "settings.json")
+	t.Setenv("PHI_CONFIG", config)
+	if err := os.WriteFile(config, []byte(`{"editor":"none","no_open":true}`), 0644); err != nil {
+		t.Fatal(err)
+	}
+	workspace := filepath.Join(t.TempDir(), "lab space & punctuation")
+	t.Setenv("PHI_WORKSPACE", workspace)
+	var stdout, stderr bytes.Buffer
+	run := func(args ...string) int {
+		stdout.Reset()
+		stderr.Reset()
+		return app.Run(args, assets, &stdout, &stderr)
+	}
+	if code := run("open", "1"); code != 0 {
+		t.Fatalf("open returned %d: %s", code, stderr.String())
+	}
+	root := filepath.Join(workspace, "01-basic-java-programs")
+	document := filepath.Join(root, "LabEx_Basic-Java-Programs_Week1part1.docx")
+	opened, err := os.ReadFile(log)
+	openedArgs := strings.Split(strings.TrimSuffix(string(opened), "\n"), "\n")
+	if err != nil || len(openedArgs) == 0 || openedArgs[len(openedArgs)-1] != document || (runtime.GOOS == "linux" && openedArgs[0] != "--writer") {
+		t.Fatalf("launcher received %q: %v", opened, err)
+	}
+	if err := os.WriteFile(document, []byte("learner-edited handout"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	previous, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Chdir(filepath.Join(root, "src", "primitives")); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = os.Chdir(previous) })
+	if code := run("open"); code != 0 {
+		t.Fatalf("nested open failed: %s", stderr.String())
+	}
+	contents, err := os.ReadFile(document)
+	if err != nil || string(contents) != "learner-edited handout" {
+		t.Fatal("opening overwrote handout edits")
+	}
+	if err := os.Remove(document); err != nil {
+		t.Fatal(err)
+	}
+	if code := run("open"); code != 0 {
+		t.Fatal(stderr.String())
+	}
+	contents, err = os.ReadFile(document)
+	original, _ := assets.ReadFile("word_doc/LabEx_Basic-Java-Programs_Week1part1.docx")
+	if err != nil || !bytes.Equal(contents, original) {
+		t.Fatal("missing handout was not restored")
+	}
+	if err := os.WriteFile(launcher, []byte("#!/bin/sh\nprintf '%s\\n' 'Word processor failed' >&2\nexit 7\n"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	if code := run("open"); code == 0 || !strings.Contains(stderr.String(), "Word processor failed") {
+		t.Fatalf("launcher failure was hidden: code %d %s", code, stderr.String())
 	}
 }

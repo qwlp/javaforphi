@@ -20,9 +20,13 @@ Starter source folders: `src/lib/`, `src/main/`. Follow the tasks below for the 
 
 List operations update contents as expected; name membership uses value equality; loop and stream calculations give the same order totals and averages.
 
+## Automated check requirements
+
+For automated checks, `StringListDemo.main` uses the supplied command-line words when arguments are present and prints uppercase and lowercase forms of each; keep your collection mutation demonstration for runs without arguments. `NameListDemo` reads four first/family name pairs from standard input and prints each full name. Factor the order calculations into `public static double totalCost(List<OrderLine> orders)` and `public static double averageCost(List<OrderLine> orders)` on `main.OrderListDemo`; an empty list returns zero for both. Use these methods in your demo so checks can try different order contents.
+
 ## Check your work
 
-Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+Run `phi check` from this lesson folder (or any nested source folder). The embedded behavioral and boundary tests must pass. Compilation is only the first stage; a compiling but incorrect implementation fails.
 
 For an optional clue, run `phi hint`.
 

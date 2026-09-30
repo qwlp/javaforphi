@@ -150,13 +150,10 @@ func continueCommand(command string, arguments []string, assets fs.FS, course *c
 func setWorkflow(settings *Settings, value string) error {
 	switch value {
 	case "editor":
-		settings.NoOpen = true
 		settings.NoEditor = false
 	case "terminal":
-		settings.NoOpen = true
 		settings.NoEditor = true
 	case "full":
-		settings.NoOpen = false
 		settings.NoEditor = false
 	default:
 		return fmt.Errorf("workflow must be editor, terminal, or full")
@@ -200,7 +197,7 @@ func setupCommand(arguments []string, stdout, stderr io.Writer) int {
 		if err != nil {
 			return commandError(stderr, err.Error())
 		}
-		workflow, err = ask("Workflow (editor: IDE + lesson shell, terminal: lesson shell, full: IDE + handout + shell)", workflow)
+		workflow, err = ask("Workflow (editor: IDE + handout + shell, terminal: handout + shell, full: same as editor)", workflow)
 		if err != nil {
 			return commandError(stderr, err.Error())
 		}

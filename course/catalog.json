@@ -12,7 +12,27 @@
       "archive": "material/week_1/labs/BasicJavaPrograms.zip",
       "readme": "course/week-1/exercises/basic-java-programs/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/basic-java-programs",
+        "test_classes": [
+          "phi.tests.BasicProgramsTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     },
     {
       "id": "week-1/using-objects",
@@ -24,7 +44,27 @@
       "archive": "material/week_1/labs/UsingObjects.zip",
       "readme": "course/week-1/exercises/using-objects/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/using-objects",
+        "test_classes": [
+          "phi.tests.UsingObjectsTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     },
     {
       "id": "week-1/custom-classes",
@@ -39,7 +79,11 @@
       "check": {
         "type": "junit4",
         "test_source": "archive",
-        "test_classes": ["lib.CounterTest", "lib.NameTest", "lib.CDTrackTest"]
+        "test_classes": [
+          "lib.CounterTest",
+          "lib.NameTest",
+          "lib.CDTrackTest"
+        ]
       },
       "dependencies": [
         {
@@ -67,7 +111,10 @@
       "check": {
         "type": "junit4",
         "test_source": "archive",
-        "test_classes": ["lib.OrderLineTest", "lib.ModuleTest"]
+        "test_classes": [
+          "lib.OrderLineTest",
+          "lib.ModuleTest"
+        ]
       },
       "dependencies": [
         {
@@ -92,7 +139,27 @@
       "archive": "material/week_2/labs/ArrayLists.zip",
       "readme": "course/week-2/exercises/array-lists/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/array-lists",
+        "test_classes": [
+          "phi.tests.ArrayListsTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     },
     {
       "id": "week-2/composition",
@@ -104,7 +171,27 @@
       "archive": "material/week_2/labs/Composition.zip",
       "readme": "course/week-2/exercises/composition/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/composition",
+        "test_classes": [
+          "phi.tests.CompositionTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     },
     {
       "id": "week-2/player-composition",
@@ -120,7 +207,9 @@
         "type": "junit4",
         "test_source": "course",
         "test_path": "course/week-2/exercises/player-composition/tests",
-        "test_classes": ["course.tests.PlayerFoundationTest"]
+        "test_classes": [
+          "course.tests.PlayerFoundationTest"
+        ]
       },
       "dependencies": [
         {
@@ -145,7 +234,27 @@
       "archive": "material/week_2/labs/Aggregation.zip",
       "readme": "course/week-2/exercises/aggregation/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/aggregation",
+        "test_classes": [
+          "phi.tests.AggregationTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     },
     {
       "id": "week-2/register",
@@ -160,7 +269,10 @@
       "check": {
         "type": "junit4",
         "test_source": "archive",
-        "test_classes": ["lib.RegisterTest", "main.RegisterAppTest"]
+        "test_classes": [
+          "lib.RegisterTest",
+          "main.RegisterAppTest"
+        ]
       },
       "dependencies": [
         {
@@ -188,7 +300,10 @@
       "check": {
         "type": "junit4",
         "test_source": "archive",
-        "test_classes": ["lib.PlayerTest", "main.PlayerAppTest"]
+        "test_classes": [
+          "lib.PlayerTest",
+          "main.PlayerAppTest"
+        ]
       },
       "dependencies": [
         {
@@ -217,7 +332,9 @@
         "type": "junit4",
         "test_source": "course",
         "test_path": "course/week-3/exercises/interface-types/tests",
-        "test_classes": ["course.tests.InterfaceTypesLabTest"]
+        "test_classes": [
+          "course.tests.InterfaceTypesLabTest"
+        ]
       },
       "dependencies": [
         {
@@ -242,7 +359,27 @@
       "archive": "material/week_3/labs/countable.zip",
       "readme": "course/week-3/exercises/countable/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/countable",
+        "test_classes": [
+          "phi.tests.CountableTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     },
     {
       "id": "week-3/price-policy",
@@ -254,7 +391,27 @@
       "archive": "material/week_3/labs/pricePolicy.zip",
       "readme": "course/week-3/exercises/price-policy/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/price-policy",
+        "test_classes": [
+          "phi.tests.PricePolicyTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     },
     {
       "id": "week-3/inheritance",
@@ -270,7 +427,9 @@
         "type": "junit4",
         "test_source": "course",
         "test_path": "course/week-3/exercises/inheritance/tests",
-        "test_classes": ["course.tests.InheritanceLabTest"]
+        "test_classes": [
+          "course.tests.InheritanceLabTest"
+        ]
       },
       "dependencies": [
         {
@@ -295,7 +454,27 @@
       "archive": "material/week_3/labs/Comparable_Iterable_example.zip",
       "readme": "course/week-3/exercises/comparable-iterable/readme.md",
       "java_release": 17,
-      "check": { "type": "compile" }
+      "check": {
+        "type": "junit4",
+        "test_source": "course",
+        "test_path": "grading/comparable-iterable",
+        "test_classes": [
+          "phi.tests.ComparableIterableTest"
+        ],
+        "support_path": "grading/support"
+      },
+      "dependencies": [
+        {
+          "name": "junit-4.13.2.jar",
+          "url": "https://repo.maven.apache.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        },
+        {
+          "name": "hamcrest-core-1.3.jar",
+          "url": "https://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ]
     }
   ]
 }
