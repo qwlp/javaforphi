@@ -1,6 +1,12 @@
 # Composition
 
+## Goal
+
 Composition models a “has-a” relationship: an object owns a fixed set of other objects and delegates appropriate behavior to them.
+
+## Files to work on
+
+Starter source folders: `src/lib/dice/`, `src/lib/employee/`, `src/main/`. Follow the tasks below for the classes to edit or create. The copied Word handout contains the full lab specification.
 
 ## Tasks
 
@@ -9,4 +15,21 @@ Composition models a “has-a” relationship: an object owns a fixed set of oth
 3. Trace both examples through `EmployeeDemo` and `RollableDemo`.
 4. Explain why using `Rollable` lets a `Die` and a `PairOfDice` be handled uniformly.
 
-Run `phi check` to compile the complete project.
+## Expected behavior
+
+Employee delegates name and date behavior to its contained objects. PairOfDice rolls both dice and reports their combined score through Rollable.
+
+## Check your work
+
+Run `phi check` from this lesson folder (or any nested source folder). All sources must compile. Run the relevant demo classes in your IDE and compare their output with the tasks; compilation alone does not verify behavior.
+
+For an optional clue, run `phi hint`.
+
+Once you have checked the tasks, run `phi submit` to record local completion, then `phi next` to continue.
+
+<details>
+<summary>Hint — open if you get stuck</summary>
+
+Follow a method call from the outer object to the contained object. Delegate instead of duplicating the contained object’s calculations.
+
+</details>

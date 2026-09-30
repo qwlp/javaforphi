@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/x/term"
+
 	"github.com/javaforphi/javaforphi/internal/catalog"
 	"github.com/javaforphi/javaforphi/internal/checker"
 	"github.com/javaforphi/javaforphi/internal/starter"
@@ -28,8 +30,10 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 		return 2
 	}
 	if len(arguments) == 0 {
-		usage(stdout)
-		return 0
+		if useTUI(stdout) {
+			return terminalCourse(course, assets, stdout, stderr)
+		}
+		return homeCommand(course, stdout, stderr)
 	}
 
 	ctx := context.Background()
@@ -50,18 +54,21 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 		return updateCommand(ctx, stdout, stderr)
 	case "settings":
 		return settingsCommand(arguments[1:], stdout, stderr)
+	case "setup":
+		return setupCommand(arguments[1:], stdout, stderr)
+	case "next", "resume":
+		return continueCommand(arguments[0], arguments[1:], assets, course, stdout, stderr)
 	case "list", "l", "ls":
-		for _, lesson := range course.Lessons {
-			mode := "compile"
-			if lesson.Check.Type == "junit4" {
-				mode = "tests"
-			}
-			fmt.Fprintf(stdout, "%2d  week %d  %-7s %s\n", lesson.Number, lesson.Week, mode, lesson.Title)
+		if len(arguments) != 1 {
+			return commandError(stderr, "usage: phi list")
 		}
-		return 0
-	case "show", "s":
+		if useTUI(stdout) {
+			return terminalCourse(course, assets, stdout, stderr)
+		}
+		return listCommand(course, stdout, stderr)
+	case "show", "s", "hint":
 		if len(arguments) > 2 {
-			return commandError(stderr, "usage: phi show [lesson-number]")
+			return commandError(stderr, "usage: phi "+arguments[0]+" [lesson-number]")
 		}
 		var lesson catalog.Lesson
 		var ok bool
@@ -80,7 +87,22 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 		if err != nil {
 			return commandError(stderr, err.Error())
 		}
-		fmt.Fprint(stdout, string(data))
+		text := string(data)
+		if arguments[0] == "hint" {
+			start := strings.Index(text, "<details>")
+			if start < 0 {
+				fmt.Fprintln(stdout, "No hint is available for this lesson.")
+				return 0
+			}
+			text = text[start:]
+			if end := strings.Index(text, "</summary>"); end >= 0 {
+				text = text[end+len("</summary>"):]
+			}
+			text = strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(text), "</details>")) + "\n"
+		} else if start := strings.Index(text, "<details>"); start >= 0 {
+			text = strings.TrimSpace(text[:start]) + "\n\nNeed a hint? Run phi hint.\n"
+		}
+		fmt.Fprint(stdout, text)
 		return 0
 	case "init", "i":
 		return initCommand(arguments[1:], assets, course, stdout, stderr)
@@ -129,7 +151,7 @@ func Run(arguments []string, assets fs.FS, stdout, stderr io.Writer) int {
 				return commandError(stderr, fmt.Sprintf("record submission: %v", err))
 			}
 			fmt.Fprintf(stdout, "Submitted lesson %d locally: %s\nReceipt: %s\n", lesson.Number, lesson.Title, receipt)
-			fmt.Fprintln(stdout, "This records local completion; no files are uploaded.")
+			fmt.Fprintln(stdout, "This records local completion; no files are uploaded.\nNext: phi next")
 		}
 		return 0
 	case "check-all", "ca":
@@ -233,6 +255,8 @@ func startCommand(arguments []string, assets fs.FS, course *catalog.Catalog, std
 	if err != nil {
 		return commandError(stderr, err.Error())
 	}
+	noOpen = noOpen || settings.NoOpen
+	noEditor = noEditor || settings.NoEditor
 	workspace, err := defaultWorkspace()
 	if err != nil {
 		return commandError(stderr, err.Error())
@@ -240,7 +264,7 @@ func startCommand(arguments []string, assets fs.FS, course *catalog.Catalog, std
 	if len(positional) == 2 {
 		workspace = positional[1]
 	}
-	destination := filepath.Join(workspace, lesson.FolderName())
+	destination := findLessonDirectory(workspace, lesson)
 	if _, err := os.Stat(destination); os.IsNotExist(err) {
 		if err := starter.Init(assets, lesson, destination); err != nil {
 			return commandError(stderr, err.Error())
@@ -305,8 +329,7 @@ func defaultWorkspace() (string, error) {
 }
 
 func stdinIsTerminal() bool {
-	info, err := os.Stdin.Stat()
-	return err == nil && info.Mode()&os.ModeCharDevice != 0
+	return term.IsTerminal(os.Stdin.Fd())
 }
 
 func openShell(directory string, stdout, stderr io.Writer) error {
@@ -345,6 +368,19 @@ func findLessonDirectory(workspace string, lesson catalog.Lesson) string {
 			return candidate
 		}
 	}
+	// Also recognize labs created with phi init <number> <custom-folder>.
+	entries, err := os.ReadDir(workspace)
+	if err == nil {
+		for _, entry := range entries {
+			if !entry.IsDir() {
+				continue
+			}
+			candidate := filepath.Join(workspace, entry.Name())
+			if found, ok := lessonFromMarker(candidate, &catalog.Catalog{Lessons: []catalog.Lesson{lesson}}); ok && found.ID == lesson.ID {
+				return candidate
+			}
+		}
+	}
 	return filepath.Join(workspace, lesson.FolderName())
 }
 
@@ -358,9 +394,15 @@ func doctor(output io.Writer) int {
 			continue
 		}
 		command := exec.Command(program, "-version")
-		combined, _ := command.CombinedOutput()
+		combined, versionErr := command.CombinedOutput()
 		line := strings.Split(strings.TrimSpace(string(combined)), "\n")[0]
-		fmt.Fprintf(output, "OK   %-5s %s (%s)\n", program, line, location)
+		major, parseErr := javaMajorVersion(line)
+		if versionErr != nil || parseErr != nil || major < 17 {
+			fmt.Fprintf(output, "FAIL %-5s JDK 17+ required: %s (%s)\n", program, line, location)
+			failed = true
+		} else {
+			fmt.Fprintf(output, "OK   %-5s %s (%s)\n", program, line, location)
+		}
 	}
 	cache, err := os.UserCacheDir()
 	if err == nil {
@@ -417,6 +459,11 @@ func usage(output io.Writer) {
 	fmt.Fprintln(output, `phi - local checker for the Java for Phi course
 
 Usage:
+  phi                                  show progress and your next action
+  phi setup [--editor <name>] [--workflow <name>]
+                                        configure editor and workflow, check Java
+  phi resume [workspace] [start flags]   continue an unfinished lesson
+  phi next [workspace] [start flags]     start the first lesson not completed
   phi <number>                          start a numbered lesson
   phi start <number> [workspace]        aliases: go, g
     --no-shell                          create the lab without entering a shell
@@ -424,6 +471,7 @@ Usage:
     --no-editor                         skip opening the configured IDE
   phi list                              aliases: l, ls
   phi show [number]                     alias:   s
+  phi hint [number]                     reveal an optional lesson hint
   phi init <number> [destination]       alias:   i
   phi init --all [workspace]
   phi check [<number> [project-dir]]    alias:   c
@@ -443,4 +491,22 @@ func commandError(output io.Writer, message string) int {
 
 func unknownLesson(output io.Writer, value string) int {
 	return commandError(output, fmt.Sprintf("unknown lesson %q; run 'phi list'", value))
+}
+
+func javaMajorVersion(line string) (int, error) {
+	fields := strings.Fields(strings.ReplaceAll(line, "\"", ""))
+	for _, field := range fields {
+		if len(field) == 0 || field[0] < '0' || field[0] > '9' {
+			continue
+		}
+		parts := strings.FieldsFunc(field, func(r rune) bool { return r < '0' || r > '9' })
+		if len(parts) == 0 {
+			continue
+		}
+		if parts[0] == "1" && len(parts) > 1 {
+			return strconv.Atoi(parts[1])
+		}
+		return strconv.Atoi(parts[0])
+	}
+	return 0, fmt.Errorf("cannot determine Java version")
 }

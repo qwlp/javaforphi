@@ -211,3 +211,68 @@ func TestStarterInitIsCleanAndSelfIdentifying(t *testing.T) {
 		t.Errorf("compiled bin directory should not be extracted")
 	}
 }
+
+func TestGuidedNavigationAndProgress(t *testing.T) {
+	t.Setenv("PHI_CONFIG", filepath.Join(t.TempDir(), "settings.json"))
+	workspace := t.TempDir()
+	t.Setenv("PHI_WORKSPACE", workspace)
+	var stdout, stderr bytes.Buffer
+	run := func(args ...string) string {
+		t.Helper()
+		stdout.Reset()
+		stderr.Reset()
+		if code := app.Run(args, assets, &stdout, &stderr); code != 0 {
+			t.Fatalf("%v returned %d: %s", args, code, stderr.String())
+		}
+		return stdout.String()
+	}
+	run("next", "--no-shell", "--no-open", "--no-editor")
+	first := filepath.Join(workspace, "01-basic-java-programs")
+	run("start", "3", workspace, "--no-shell", "--no-open", "--no-editor")
+	if output := run("resume", "--no-shell", "--no-open", "--no-editor"); !strings.Contains(output, "Opening existing lesson 1") {
+		t.Fatal(output)
+	}
+	receipt := `{"lesson":"week-1/basic-java-programs","number":1,"check_type":"compile","local":true,"submitted_at":"2026-09-30T12:00:00Z"}`
+	if err := os.WriteFile(filepath.Join(first, ".phi-submission.json"), []byte(receipt), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if output := run("resume", "--no-shell", "--no-open", "--no-editor"); !strings.Contains(output, "Opening existing lesson 3") {
+		t.Fatal(output)
+	}
+	if output := run("next", "--no-shell", "--no-open", "--no-editor"); !strings.Contains(output, "Created lesson 2") {
+		t.Fatal(output)
+	}
+	if output := run(); !strings.Contains(output, "1 of 15 lessons completed") {
+		t.Fatal(output)
+	}
+	if output := run("list"); !strings.Contains(output, "Completed") || !strings.Contains(output, "In progress") || !strings.Contains(output, "Not started") {
+		t.Fatal(output)
+	}
+	// Reopening a custom folder must preserve learner files and avoid a duplicate numbered lab.
+	custom := filepath.Join(workspace, "my-array-lists")
+	run("init", "5", custom)
+	if output := run("start", "5", workspace, "--no-shell", "--no-open", "--no-editor"); !strings.Contains(output, custom) || !strings.Contains(output, "Opening existing lesson 5") {
+		t.Fatal(output)
+	}
+	if _, err := os.Stat(filepath.Join(workspace, "05-array-lists")); !os.IsNotExist(err) {
+		t.Fatalf("created duplicate lab: %v", err)
+	}
+}
+
+func TestLessonGuidanceIsComplete(t *testing.T) {
+	course, err := catalog.Load(assets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, lesson := range course.Lessons {
+		data, err := assets.ReadFile(lesson.Readme)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, required := range []string{"## Goal", "## Files to work on", "## Expected behavior", "## Check your work", "phi hint", "<details>"} {
+			if !strings.Contains(string(data), required) {
+				t.Errorf("%s missing %s", lesson.ID, required)
+			}
+		}
+	}
+}

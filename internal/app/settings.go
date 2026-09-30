@@ -12,6 +12,9 @@ import (
 )
 
 type Settings struct {
+	NoEditor         bool   `json:"no_editor,omitempty"`
+	NoOpen           bool   `json:"no_open,omitempty"`
+	SetupComplete    bool   `json:"setup_complete,omitempty"`
 	Editor           string `json:"editor"`
 	EditorPath       string `json:"editor_path,omitempty"`
 	EclipseWorkspace string `json:"eclipse_workspace,omitempty"`
@@ -88,10 +91,14 @@ func settingsCommand(arguments []string, stdout, stderr io.Writer) int {
 		return 0
 	}
 	if len(arguments) != 3 || arguments[0] != "set" {
-		return commandError(stderr, "usage: phi settings [set <editor|editor-path|eclipse-workspace> <value>]")
+		return commandError(stderr, "usage: phi settings [set <editor|editor-path|eclipse-workspace|workflow> <value>]")
 	}
 	key, value := arguments[1], arguments[2]
 	switch key {
+	case "workflow":
+		if err := setWorkflow(&settings, value); err != nil {
+			return commandError(stderr, err.Error())
+		}
 	case "editor":
 		value = strings.ToLower(value)
 		if value != "none" && value != "eclipse" && value != "intellij" {

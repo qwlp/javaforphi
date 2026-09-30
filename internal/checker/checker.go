@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -93,17 +94,21 @@ func Check(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDire
 	}
 	compileArgs = append(compileArgs, sources...)
 	fmt.Fprintf(output, "Checking %s (%d source files)...\n", lesson.Title, len(sources))
-	if err := run(ctx, output, "javac", compileArgs...); err != nil {
+	var compileOutput bytes.Buffer
+	if err := run(ctx, &compileOutput, "javac", compileArgs...); err != nil {
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			fmt.Fprintln(output, "\nFAILED: the lesson check exceeded the two-minute limit.")
+			fmt.Fprint(output, compileOutput.String())
 			return ErrFailed
 		}
 		fmt.Fprintln(output, "\nFAILED: Java compilation did not succeed.")
+		explainFailure(output, compileOutput.String(), true, absProject)
 		return ErrFailed
 	}
 
+	fmt.Fprint(output, compileOutput.String())
 	if lesson.Check.Type == "compile" {
-		fmt.Fprintln(output, "PASS: all Java sources compile.")
+		fmt.Fprintln(output, "PASS: all Java sources compile.\nThis lesson checks compilation only. Run the demos and compare their behavior with the lesson tasks.\nWhen ready: phi submit")
 		return nil
 	}
 	if lesson.Check.Type != "junit4" {
@@ -112,15 +117,19 @@ func Check(ctx context.Context, assets fs.FS, lesson catalog.Lesson, projectDire
 	classpath := append([]string{classes}, dependencies...)
 	runArgs := []string{"-cp", strings.Join(classpath, string(os.PathListSeparator)), "org.junit.runner.JUnitCore"}
 	runArgs = append(runArgs, lesson.Check.TestClasses...)
-	if err := run(ctx, output, "java", runArgs...); err != nil {
+	var testOutput bytes.Buffer
+	if err := run(ctx, &testOutput, "java", runArgs...); err != nil {
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			fmt.Fprintln(output, "\nFAILED: the lesson check exceeded the two-minute limit.")
+			fmt.Fprint(output, testOutput.String())
 			return ErrFailed
 		}
 		fmt.Fprintln(output, "\nFAILED: one or more lesson tests failed.")
+		explainFailure(output, testOutput.String(), false, absProject)
 		return ErrFailed
 	}
-	fmt.Fprintln(output, "PASS: all lesson tests passed.")
+	fmt.Fprint(output, testOutput.String())
+	fmt.Fprintln(output, "PASS: all lesson tests passed.\nWhen ready: phi submit")
 	return nil
 }
 
@@ -213,4 +222,27 @@ func copyEmbeddedTests(assets fs.FS, source, destination string) error {
 		}
 		return os.WriteFile(target, data, 0o644)
 	})
+}
+
+// Put actionable diagnostics before the complete tool output.
+func explainFailure(output io.Writer, detail string, compile bool, root string) {
+	if compile {
+		pattern := regexp.MustCompile(`(?m)^(.+\.java):(\d+): error: (.+)$`)
+		if match := pattern.FindStringSubmatch(detail); match != nil {
+			filename := match[1]
+			if relative, err := filepath.Rel(root, filename); err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(os.PathSeparator)) {
+				filename = relative
+			}
+			fmt.Fprintf(output, "First error: %s:%s — %s\n", filename, match[2], match[3])
+		}
+		fmt.Fprintln(output, "Next: fix the first compiler error, save your files, and run phi check again.")
+	} else {
+		pattern := regexp.MustCompile(`(?m)^\d+\) (.+)$`)
+		for _, match := range pattern.FindAllStringSubmatch(detail, -1) {
+			fmt.Fprintf(output, "Failed test: %s\n", match[1])
+		}
+		fmt.Fprintln(output, "Next: compare the expected and actual values below with phi show. Fix one behavior at a time, then run phi check again.")
+	}
+	fmt.Fprintln(output, "\nFull diagnostic output:")
+	fmt.Fprint(output, detail)
 }

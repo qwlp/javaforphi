@@ -2,10 +2,80 @@
 
 Java for Phi turns the material in `material/` into a local, Boot.dev-style course: each lab has a short lesson, a starter project, and an automated check. The checker is a single Go program and works on Windows, macOS, and Linux.
 
+## Quick install
+
+Linux and macOS (requires Git and Bash):
+
+```sh
+git clone https://github.com/qwlp/javaforphi.git "$HOME/javaforphi" && bash "$HOME/javaforphi/install.sh"
+```
+
+Windows (PowerShell, requires Git):
+
+```powershell
+git clone https://github.com/qwlp/javaforphi.git "$HOME\javaforphi"; if ($LASTEXITCODE -eq 0) { powershell -NoProfile -ExecutionPolicy Bypass -File "$HOME\javaforphi\install.ps1" }
+```
+
+These commands create a checkout at `~/javaforphi`, then run the installer.
+Keep it for `phi update`. If that folder already exists, run its installer
+instead. The installer reuses compatible Go or downloads a verified private
+SDK. Open a new terminal afterward and run `phi setup`. JDK 17+ is required
+for the exercises.
+
+## Terminal interface
+
+In an interactive terminal, `phi` and `phi list` open a Bubble Tea course
+browser styled with Charm Lip Gloss: progress, lesson statuses, instructions,
+and optional hints are available without remembering commands.
+
+Use **↑/↓** or **j/k** to choose a lesson, **Enter** to open it, **l** to read,
+**h** for a hint, **c** to check, and **s** to submit. **n** starts the next
+incomplete lesson, **r** resumes, **o** runs setup, **?** shows help, and **q**
+quits. Instructions scroll with arrow keys or Page Up/Page Down; **Esc** returns.
+Actions close the browser before opening apps or running checks.
+
+Piped output stays plain. Set `PHI_PLAIN=1` to disable the browser, or
+`NO_COLOR=1` to disable its colors. Existing CLI commands remain available.
+
+## Guided learning
+
+Run `phi` to see your progress and the next action. Start with `phi setup`:
+it asks for your editor and workflow in an interactive terminal, saves your
+preferences, and checks that Java and javac are version 17 or newer.
+For scripted setup, use `phi setup --editor intellij --workflow editor`.
+
+- `phi resume` reopens an unfinished lesson; inside a lab it prefers that lesson.
+- `phi next` opens the first lesson without a successful submission, in course order.
+- `phi list` shows Not started, In progress, or Completed and the check type.
+- `phi show` displays the lesson; `phi hint` reveals its optional hint.
+- `phi check` reports actionable failures before full compiler or test diagnostics.
+- `phi submit` records completion after checks pass, then points you to `phi next`.
+
+`phi next` and `phi resume` accept an optional workspace and the same
+`--no-shell`, `--no-open`, and `--no-editor` flags as `phi start`.
+Inside a lab, the guided commands use its parent as the workspace; elsewhere
+they use `PHI_WORKSPACE` or `~/phi-lessons`. Completion reflects a valid local
+receipt from the last successful submission, not automatic checking after edits.
+
+Choose a workflow during setup or with `phi settings set workflow <name>`:
+
+| Workflow | What opens |
+| --- | --- |
+| `editor` | Your selected IDE and a lesson shell |
+| `terminal` | A shell in the lesson folder |
+| `full` | IDE, Word handout, and lesson shell |
+
+Starting a lesson enters a shell in its folder in every workflow. Use
+`--no-shell` to skip it; type `exit` to return to the previous shell.
+Older saved `no_shell` preferences are ignored.
+Setup defaults to the editor workflow; choosing no editor defaults to terminal.
+The handout is copied in every workflow. Each lesson includes its goal, source
+folders, tasks, expected behavior, checking instructions, and an optional hint.
+
 ## Requirements
 
 - JDK 17 or newer (`java` and `javac` on `PATH`)
-- Go 1.22 or newer only when building the CLI from source
+- Go 1.26 or newer only when building the CLI from source
 - An internet connection on the first graded check, so the CLI can cache JUnit 4 and Hamcrest
 
 No Maven, Gradle, or Eclipse installation is required. Eclipse projects remain supported.
@@ -26,7 +96,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
 The scripts first check for Go on PATH and reuse it if it meets the version
-required by `go.mod` (currently 1.22+). They also check for a previously installed
+required by `go.mod` (currently 1.26+). They also check for a previously installed
 private SDK. Only if neither is suitable do they download Go from go.dev and
 verify its SHA-256 checksum. They build `phi` and add it to your user PATH;
 a downloaded private SDK is also available on PATH. No administrator privileges are needed.
