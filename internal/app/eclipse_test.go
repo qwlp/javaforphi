@@ -33,6 +33,35 @@ func TestEclipseHeartbeat(t *testing.T) {
 	}
 }
 
+func TestLocateEclipseNixLayout(t *testing.T) {
+	root := t.TempDir()
+	launcher := filepath.Join(root, "bin", "eclipse")
+	installation := filepath.Join(root, "eclipse")
+	index := filepath.Join(installation, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info")
+	for _, directory := range []string{filepath.Dir(launcher), filepath.Dir(index)} {
+		if err := os.MkdirAll(directory, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.WriteFile(launcher, []byte("#!/bin/sh\n"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(index, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	link := filepath.Join(t.TempDir(), "eclipse")
+	if err := os.Symlink(launcher, link); err != nil {
+		t.Skipf("symlinks unavailable: %v", err)
+	}
+	executable, gotRoot, err := locateEclipse(Settings{EditorPath: link})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if executable != launcher || gotRoot != installation {
+		t.Fatalf("got launcher %q and installation %q; want %q and %q", executable, gotRoot, launcher, installation)
+	}
+}
+
 func TestEclipseBundlesOutsideInstallation(t *testing.T) {
 	root := t.TempDir()
 	pool := filepath.Join(t.TempDir(), "shared pool")

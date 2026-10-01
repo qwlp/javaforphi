@@ -125,7 +125,9 @@ func locateEclipse(settings Settings) (string, string, error) {
 		if err != nil {
 			continue
 		}
-		for _, root := range []string{filepath.Dir(resolved), filepath.Join(filepath.Dir(resolved), "..", "Eclipse")} {
+		// NixOS keeps its environment-setting launcher in bin/ and the
+		// installation in ../eclipse/. Keep launching through the wrapper.
+		for _, root := range []string{filepath.Dir(resolved), filepath.Join(filepath.Dir(resolved), "..", "Eclipse"), filepath.Join(filepath.Dir(resolved), "..", "eclipse")} {
 			root = filepath.Clean(root)
 			if info, err := os.Stat(filepath.Join(root, "configuration", "org.eclipse.equinox.simpleconfigurator", "bundles.info")); err == nil && info.Mode().IsRegular() {
 				return resolved, root, nil

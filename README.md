@@ -280,8 +280,9 @@ workspace names so neither is replaced.
 Phi builds a small bundled Eclipse helper on first use and caches it in a
 private configuration next to your settings. The installed Eclipse files are
 not modified, and no third-party plugin is downloaded. This requires the
-standard Eclipse `plugins/` and `configuration/` layout and a compatible Java
-compiler. Phi uses Eclipse's bundled `javac` when available, otherwise your
+standard Eclipse `plugins/` and `configuration/` layout (including NixOS packages
+with a `bin/eclipse` launcher and an `eclipse/` installation) and a compatible
+Java compiler. Phi uses Eclipse's bundled `javac` when available, otherwise your
 JDK. After updating Eclipse or switching from an older Phi setup, close its
 existing workspace once and let `phi start` reopen it with the helper.
 
