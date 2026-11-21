@@ -334,8 +334,6 @@ Initialize and check the complete course:
 ./phi check-all
 ```
 
-These commands use the same default workspace and numbered folders, such as `01-basic-java-programs` and `03-custom-classes`.
-
 The starter archives, lesson text, and pristine grading tests are embedded in the executable. A learner cannot make a failing check pass by editing the copied test files. Dependencies are downloaded from Maven Central, pinned by version, and checked against their SHA-256 digest before use. Set `PHI_CACHE` to override the dependency cache directory. The old `JAVAFORPHI_CACHE` variable and `.javaforphi.json` project markers are still recognized for migration from v0.1.0.
 
 ## Checker coverage
